@@ -1,0 +1,66 @@
+services:
+  auth:
+    build:
+      context: ./auth
+    ports:
+      - "8081:8080"
+    depends_on:
+      - auth-db
+    networks:
+      - soa-net
+
+  stakeholders:
+    build:
+      context: ./stakeholders
+    ports:
+      - "8082:8080"
+    depends_on:
+      - stakeholders-db
+    networks:
+      - soa-net
+
+  blog:
+    build:
+      context: ./blog
+    ports:
+      - "8083:8080"
+    depends_on:
+      - blog-db
+    networks:
+      - soa-net
+
+  auth-db:
+    image: postgres
+    environment:
+      POSTGRES_DB: auth-db
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+    ports:
+      - "5433:5432"
+    networks:
+      - soa-net
+
+  stakeholders-db:
+    image: postgres
+    environment:
+      POSTGRES_DB: stakeholders-db
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+    ports:
+      - "5434:5432"
+    networks:
+      - soa-net
+
+  blog-db:
+    image: postgres
+    environment:
+      POSTGRES_DB: blog-db
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+    ports:
+      - "5435:5432"
+    networks:
+      - soa-net
+
+networks:
+  soa-net:
