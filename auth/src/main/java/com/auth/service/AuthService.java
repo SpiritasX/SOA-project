@@ -2,6 +2,7 @@ package com.auth.service;
 
 import com.auth.dto.LoginRequest;
 import com.auth.dto.RegisterRequest;
+import com.auth.exception.BadRequestException;
 import com.auth.exception.ForbiddenException;
 import com.auth.exception.NotFoundException;
 import com.auth.model.Role;
@@ -22,11 +23,11 @@ public class AuthService {
 
     public void register(RegisterRequest request) {
         if (authRepository.findByUsername(request.getUsername()).isPresent()) {
-            throw new RuntimeException("Username already taken");
+            throw new BadRequestException("Username already taken");
         }
 
         if (authRepository.findByEmail(request.getEmail()).isPresent()) {
-            throw new RuntimeException("Email already taken");
+            throw new BadRequestException("Email already taken");
         }
 
         if (request.getRole().equals(Role.ADMINISTRATOR)) {

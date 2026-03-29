@@ -1,5 +1,6 @@
 package com.auth.model;
 
+import com.auth.exception.ForbiddenException;
 import jakarta.persistence.*;
 
 import java.util.Objects;
@@ -32,10 +33,6 @@ public class User {
         return id;
     }
 
-    public void setId(Long id) {
-        this.id = id;
-    }
-
     public String getUsername() {
         return username;
     }
@@ -65,6 +62,10 @@ public class User {
     }
 
     public void setRole(Role role) {
+        if (role.equals(Role.ADMINISTRATOR)) {
+            throw new ForbiddenException("Cannot change role to ADMINISTRATOR");
+        }
+
         this.role = role;
     }
 

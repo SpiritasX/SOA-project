@@ -1,5 +1,6 @@
 package com.auth.handler;
 
+import com.auth.exception.BadRequestException;
 import com.auth.exception.ForbiddenException;
 import com.auth.exception.NotFoundException;
 import org.springframework.http.HttpStatus;
@@ -9,9 +10,9 @@ import org.springframework.web.bind.annotation.RestControllerAdvice;
 
 @RestControllerAdvice
 public class GlobalExceptionHandler {
-    @ExceptionHandler(RuntimeException.class)
-    public ResponseEntity<String> handleRuntimeException(RuntimeException e) {
-        return ResponseEntity.badRequest().body(e.getMessage());
+    @ExceptionHandler(BadRequestException.class)
+    public ResponseEntity<String> handleBadRequestException(BadRequestException e) {
+        return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(e.getMessage());
     }
 
     @ExceptionHandler(NotFoundException.class)
@@ -22,5 +23,10 @@ public class GlobalExceptionHandler {
     @ExceptionHandler(ForbiddenException.class)
     public ResponseEntity<String> handleForbiddenException(ForbiddenException e) {
         return ResponseEntity.status(HttpStatus.FORBIDDEN).body(e.getMessage());
+    }
+
+    @ExceptionHandler(RuntimeException.class)
+    public ResponseEntity<String> handleRuntimeException(RuntimeException e) {
+        return ResponseEntity.badRequest().body(e.getMessage());
     }
 }
