@@ -6,7 +6,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 @RestController
-@RequestMapping("/api")
+@RequestMapping("/api/user")
 public class UserController {
     private final UserService userService;
 
@@ -15,12 +15,13 @@ public class UserController {
     }
 
     // TODO remove path variable and use JWT
-    @GetMapping("/user/{id}")
+    @GetMapping("/{id}")
     public ResponseEntity<?> getProfile(@PathVariable Long id) {
         return ResponseEntity.ok(userService.getUser(id));
     }
 
-    @PatchMapping("/user/{id}")
+    // TODO remove path variable and use JWT
+    @PatchMapping("/{id}")
     public ResponseEntity<?> updateProfile(@PathVariable Long id, @RequestBody UpdateDTO dto) {
         userService.updateUser(id, dto);
 

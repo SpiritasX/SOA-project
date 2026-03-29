@@ -20,6 +20,7 @@ public class AdminController {
         this.adminService = adminService;
     }
 
+    // TODO remove param and use JWT
     @GetMapping("/users/{id}")
 //    @PreAuthorize("hasRole('ADMINISTRATOR')")
     public ResponseEntity<DetailViewDTO> getUser(@RequestParam String role, @PathVariable Long id) {
@@ -30,6 +31,7 @@ public class AdminController {
         return ResponseEntity.ok(userService.getUser(id));
     }
 
+    // TODO remove param and use JWT
     @GetMapping("/users")
 //    @PreAuthorize("hasRole('ADMINISTRATOR')")
     public ResponseEntity<Page<ListViewDTO>> getUsers(@RequestParam String role, @RequestParam(defaultValue = "0") int page, @RequestParam(defaultValue = "20") int size) {
@@ -40,6 +42,7 @@ public class AdminController {
         return ResponseEntity.ok(userService.getUsers(page, size));
     }
 
+    // TODO remove param and use JWT
     @PatchMapping("/users/{id}/block")
     public ResponseEntity<?> blockUser(@RequestParam String role, @PathVariable Long id) {
         if (!role.equals("ADMINISTRATOR")) {
@@ -51,6 +54,7 @@ public class AdminController {
         return ResponseEntity.ok("Blocked user with id: " + id);
     }
 
+    // TODO remove param and use JWT
     @PatchMapping("/users/{id}/unblock")
     public ResponseEntity<?> unblockUser(@RequestParam String role, @PathVariable Long id) {
         if (!role.equals("ADMINISTRATOR")) {
