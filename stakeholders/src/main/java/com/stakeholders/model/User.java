@@ -13,8 +13,6 @@ public class User {
     private String firstName;
     @Column(nullable = false)
     private String lastName;
-    @Column(nullable = false, unique = true)
-    private String email;
     @Column
     private String profileImagePath;
     @Column
@@ -27,6 +25,17 @@ public class User {
     @Column(nullable = false)
     @Enumerated(EnumType.STRING)
     private Status status;
+
+    public User() {
+    }
+
+    public User(Long id, String firstName, String lastName, Role role) {
+        this.id = id;
+        this.firstName = firstName;
+        this.lastName = lastName;
+        this.role = role;
+        this.status = Status.ACTIVE;
+    }
 
     public Long getId() {
         return id;
@@ -46,14 +55,6 @@ public class User {
 
     public void setLastName(String lastName) {
         this.lastName = lastName;
-    }
-
-    public String getEmail() {
-        return email;
-    }
-
-    public void setEmail(String email) {
-        this.email = email;
     }
 
     public String getProfileImagePath() {

@@ -2,12 +2,14 @@ package com.auth.service;
 
 import com.auth.dto.LoginRequest;
 import com.auth.dto.RegisterRequest;
+import com.auth.dto.UserRegisteredEvent;
 import com.auth.exception.BadRequestException;
 import com.auth.exception.ForbiddenException;
 import com.auth.exception.NotFoundException;
 import com.auth.model.Role;
 import com.auth.model.User;
 import com.auth.repository.AuthRepository;
+import org.springframework.amqp.rabbit.core.RabbitTemplate;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
@@ -15,10 +17,12 @@ import org.springframework.stereotype.Service;
 public class AuthService {
     private final AuthRepository authRepository;
     private final PasswordEncoder passwordEncoder;
+    private final RabbitTemplate rabbitTemplate;
 
-    public AuthService(AuthRepository authRepository, PasswordEncoder passwordEncoder) {
+    public AuthService(AuthRepository authRepository, PasswordEncoder passwordEncoder, RabbitTemplate rabbitTemplate) {
         this.authRepository = authRepository;
         this.passwordEncoder = passwordEncoder;
+        this.rabbitTemplate = rabbitTemplate;
     }
 
     public void register(RegisterRequest request) {
@@ -42,6 +46,12 @@ public class AuthService {
         );
 
         authRepository.save(user);
+
+        rabbitTemplate.convertAndSend(
+                "user.exchange",
+                "user.registered",
+                new UserRegisteredEvent(user.getId(), request.getFirstName(), request.getLastName(), user.getRole())
+        );
     }
 
     public boolean login(LoginRequest request) {

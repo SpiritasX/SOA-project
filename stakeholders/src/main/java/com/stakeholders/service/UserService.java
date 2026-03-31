@@ -3,9 +3,11 @@ package com.stakeholders.service;
 import com.stakeholders.dto.DetailViewDTO;
 import com.stakeholders.dto.ListViewDTO;
 import com.stakeholders.dto.UpdateDTO;
+import com.stakeholders.dto.UserRegisteredEvent;
 import com.stakeholders.exception.NotFoundException;
 import com.stakeholders.model.User;
 import com.stakeholders.repository.UserRepository;
+import org.springframework.amqp.rabbit.annotation.RabbitListener;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Service;
@@ -57,6 +59,17 @@ public class UserService {
             user.setMotto(dto.getMotto());
         }
 
+        userRepository.save(user);
+    }
+
+    @RabbitListener(queues = "user.registered.queue")
+    public void handleUserRegistered(UserRegisteredEvent event) {
+        User user = new User(
+                event.getId(),
+                event.getFirstName(),
+                event.getLastName(),
+                event.getRole()
+        );
         userRepository.save(user);
     }
 }

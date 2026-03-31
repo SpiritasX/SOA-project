@@ -6,6 +6,7 @@ services:
       - "8081:8080"
     depends_on:
       - auth-db
+      - rabbitmq
     networks:
       - soa-net
 
@@ -16,6 +17,7 @@ services:
       - "8082:8080"
     depends_on:
       - stakeholders-db
+      - rabbitmq
     networks:
       - soa-net
 
@@ -26,6 +28,7 @@ services:
       - "8083:8080"
     depends_on:
       - blog-db
+      - rabbitmq
     networks:
       - soa-net
 
@@ -73,6 +76,17 @@ services:
       - auth-db
       - blog-db
       - stakeholders-db
+    networks:
+      - soa-net
+
+  rabbitmq:
+    image: rabbitmq:4.2.5-management
+    ports:
+      - "5672:5672"   # AMQP (for apps)
+      - "15672:15672" # Management UI
+    environment:
+      RABBITMQ_DEFAULT_USER: guest
+      RABBITMQ_DEFAULT_PASS: guest
     networks:
       - soa-net
 
