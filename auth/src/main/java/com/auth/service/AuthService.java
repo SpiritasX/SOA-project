@@ -9,6 +9,7 @@ import com.auth.exception.NotFoundException;
 import com.auth.model.Role;
 import com.auth.model.User;
 import com.auth.repository.AuthRepository;
+import org.springframework.amqp.rabbit.annotation.RabbitListener;
 import org.springframework.amqp.rabbit.core.RabbitTemplate;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
@@ -57,5 +58,19 @@ public class AuthService {
     public boolean login(LoginRequest request) {
         User user = authRepository.findByUsername(request.getUsername()).orElseThrow(() -> new NotFoundException("User not found"));
         return passwordEncoder.matches(request.getPassword(), user.getPassword());
+    }
+
+    @RabbitListener(queues = "user.blocked.queue")
+    public void handleUserBlockedEvent(Long userId) {
+        User user = authRepository.findById(userId).orElseThrow(() -> new NotFoundException("User not found"));
+        user.block();
+        authRepository.save(user);
+    }
+
+    @RabbitListener(queues = "user.unblocked.queue")
+    public void handleUserUnblockedEvent(Long userId) {
+        User user = authRepository.findById(userId).orElseThrow(() -> new NotFoundException("User not found"));
+        user.unblock();
+        authRepository.save(user);
     }
 }

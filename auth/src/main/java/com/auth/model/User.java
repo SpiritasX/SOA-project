@@ -19,6 +19,9 @@ public class User {
     @Column(nullable = false)
     @Enumerated(value = EnumType.STRING)
     private Role role;
+    @Column(nullable = false)
+    @Enumerated(value = EnumType.STRING)
+    private Status status;
 
     public User() {}
 
@@ -27,6 +30,7 @@ public class User {
         this.password = password;
         this.email = email;
         this.role = role;
+        this.status = Status.ACTIVE;
     }
 
     public Long getId() {
@@ -67,6 +71,18 @@ public class User {
         }
 
         this.role = role;
+    }
+
+    public Status getStatus() {
+        return status;
+    }
+
+    public void block() {
+        this.status = Status.BLOCKED;
+    }
+
+    public void unblock() {
+        this.status = Status.ACTIVE;
     }
 
     @Override

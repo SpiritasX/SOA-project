@@ -5,15 +5,18 @@ import com.stakeholders.exception.NotFoundException;
 import com.stakeholders.model.Status;
 import com.stakeholders.model.User;
 import com.stakeholders.repository.UserRepository;
+import org.springframework.amqp.rabbit.core.RabbitTemplate;
 import org.springframework.stereotype.Service;
 
 @Service
 public class AdminService {
 
     private final UserRepository userRepository;
+    private final RabbitTemplate rabbitTemplate;
 
-    public AdminService(UserRepository userRepository) {
+    public AdminService(UserRepository userRepository, RabbitTemplate rabbitTemplate) {
         this.userRepository = userRepository;
+        this.rabbitTemplate = rabbitTemplate;
     }
 
     public void blockUser(Long id) {
@@ -25,6 +28,12 @@ public class AdminService {
 
         user.block();
         userRepository.save(user);
+
+        rabbitTemplate.convertAndSend(
+                "user.exchange",
+                "user.blocked",
+                user.getId()
+        );
     }
 
     public void unblockUser(Long id) {
@@ -36,5 +45,11 @@ public class AdminService {
 
         user.unblock();
         userRepository.save(user);
+
+        rabbitTemplate.convertAndSend(
+                "user.exchange",
+                "user.unblocked",
+                user.getId()
+        );
     }
 }
