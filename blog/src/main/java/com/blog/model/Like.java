@@ -9,16 +9,16 @@ public class Like {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
-    @Column(nullable = false)
-    private Long userId;
+    @ManyToOne(fetch = FetchType.EAGER, optional = false)
+    private User user;
     @ManyToOne(fetch = FetchType.LAZY)
     private Blog blog;
 
     public Like() {
     }
 
-    public Like(Long userId, Blog blog) {
-        this.userId = userId;
+    public Like(User user, Blog blog) {
+        this.user = user;
         this.blog = blog;
     }
 
@@ -26,8 +26,8 @@ public class Like {
         return id;
     }
 
-    public Long getUserId() {
-        return userId;
+    public User getUser() {
+        return user;
     }
 
     public Blog getBlog() {

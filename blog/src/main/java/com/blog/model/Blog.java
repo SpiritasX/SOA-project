@@ -10,8 +10,8 @@ public class Blog {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
-    @Column(nullable = false)
-    private Long authorId;
+    @ManyToOne(fetch = FetchType.EAGER, optional = false)
+    private User author;
     @Column(nullable = false)
     private String title;
     @Column
@@ -28,8 +28,8 @@ public class Blog {
     public Blog() {
     }
 
-    public Blog(Long authorId, String title, String description) {
-        this.authorId = authorId;
+    public Blog(User author, String title, String description) {
+        this.author = author;
         this.title = title;
         this.description = description;
         this.createdAt = new Timestamp(System.currentTimeMillis());
@@ -42,8 +42,8 @@ public class Blog {
         return id;
     }
 
-    public Long getAuthorId() {
-        return authorId;
+    public User getAuthor() {
+        return author;
     }
 
     public String getTitle() {
