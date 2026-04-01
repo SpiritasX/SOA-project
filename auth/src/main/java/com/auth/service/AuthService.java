@@ -60,14 +60,14 @@ public class AuthService {
         return passwordEncoder.matches(request.getPassword(), user.getPassword());
     }
 
-    @RabbitListener(queues = "user.blocked.queue")
+    @RabbitListener(queues = "user.blocked.auth.queue")
     public void handleUserBlockedEvent(Long userId) {
         User user = authRepository.findById(userId).orElseThrow(() -> new NotFoundException("User not found"));
         user.block();
         authRepository.save(user);
     }
 
-    @RabbitListener(queues = "user.unblocked.queue")
+    @RabbitListener(queues = "user.unblocked.auth.queue")
     public void handleUserUnblockedEvent(Long userId) {
         User user = authRepository.findById(userId).orElseThrow(() -> new NotFoundException("User not found"));
         user.unblock();

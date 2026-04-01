@@ -62,7 +62,7 @@ public class UserService {
         userRepository.save(user);
     }
 
-    @RabbitListener(queues = "user.registered.queue")
+    @RabbitListener(queues = "user.registered.stakeholders.queue")
     public void handleUserRegistered(UserRegisteredEvent event) {
         User user = new User(
                 event.getId(),

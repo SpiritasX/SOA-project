@@ -1,4 +1,4 @@
-package com.stakeholders.config;
+package com.blog.config;
 
 import org.springframework.amqp.core.Binding;
 import org.springframework.amqp.core.BindingBuilder;
@@ -17,7 +17,7 @@ public class RabbitConfig {
 
     @Bean
     public Queue registeredQueue() {
-        return new Queue("user.registered.stakeholders.queue");
+        return new Queue("user.registered.blog.queue");
     }
 
     @Bean
@@ -26,6 +26,32 @@ public class RabbitConfig {
                 .bind(registeredQueue)
                 .to(exchange)
                 .with("user.registered");
+    }
+
+    @Bean
+    public Queue blockedQueue() {
+        return new Queue("user.blocked.blog.queue");
+    }
+
+    @Bean
+    public Binding blockedBinding(Queue blockedQueue, TopicExchange exchange) {
+        return BindingBuilder
+                .bind(blockedQueue)
+                .to(exchange)
+                .with("user.blocked");
+    }
+
+    @Bean
+    public Queue unblockedQueue() {
+        return new Queue("user.unblocked.blog.queue");
+    }
+
+    @Bean
+    public Binding unblockedBinding(Queue unblockedQueue, TopicExchange exchange) {
+        return BindingBuilder
+                .bind(unblockedQueue)
+                .to(exchange)
+                .with("user.unblocked");
     }
 
     @Bean

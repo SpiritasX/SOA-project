@@ -16,21 +16,8 @@ public class RabbitConfig {
     }
 
     @Bean
-    public Queue registeredQueue() {
-        return new Queue("user.registered.queue");
-    }
-
-    @Bean
-    public Binding registeredBinding(Queue registeredQueue, TopicExchange exchange) {
-        return BindingBuilder
-                .bind(registeredQueue)
-                .to(exchange)
-                .with("user.registered");
-    }
-
-    @Bean
     public Queue blockedQueue() {
-        return new Queue("user.blocked.queue");
+        return new Queue("user.blocked.auth.queue");
     }
 
     @Bean
@@ -43,7 +30,7 @@ public class RabbitConfig {
 
     @Bean
     public Queue unblockedQueue() {
-        return new Queue("user.unblocked.queue");
+        return new Queue("user.unblocked.auth.queue");
     }
 
     @Bean
