@@ -1,0 +1,61 @@
+package com.blog.config;
+
+import org.springframework.amqp.core.Binding;
+import org.springframework.amqp.core.BindingBuilder;
+import org.springframework.amqp.core.Queue;
+import org.springframework.amqp.core.TopicExchange;
+import org.springframework.amqp.support.converter.JacksonJsonMessageConverter;
+import org.springframework.context.annotation.Bean;
+import org.springframework.context.annotation.Configuration;
+
+@Configuration
+public class RabbitConfig {
+    @Bean
+    public TopicExchange exchange() {
+        return new TopicExchange("user.exchange");
+    }
+
+    @Bean
+    public Queue registeredQueue() {
+        return new Queue("user.registered.blog.queue");
+    }
+
+    @Bean
+    public Binding registeredBinding(Queue registeredQueue, TopicExchange exchange) {
+        return BindingBuilder
+                .bind(registeredQueue)
+                .to(exchange)
+                .with("user.registered");
+    }
+
+    @Bean
+    public Queue blockedQueue() {
+        return new Queue("user.blocked.blog.queue");
+    }
+
+    @Bean
+    public Binding blockedBinding(Queue blockedQueue, TopicExchange exchange) {
+        return BindingBuilder
+                .bind(blockedQueue)
+                .to(exchange)
+                .with("user.blocked");
+    }
+
+    @Bean
+    public Queue unblockedQueue() {
+        return new Queue("user.unblocked.blog.queue");
+    }
+
+    @Bean
+    public Binding unblockedBinding(Queue unblockedQueue, TopicExchange exchange) {
+        return BindingBuilder
+                .bind(unblockedQueue)
+                .to(exchange)
+                .with("user.unblocked");
+    }
+
+    @Bean
+    public JacksonJsonMessageConverter messageConverter() {
+        return new JacksonJsonMessageConverter();
+    }
+}

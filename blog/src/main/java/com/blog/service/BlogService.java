@@ -7,9 +7,11 @@ import com.blog.exception.NotFoundException;
 import com.blog.model.Blog;
 import com.blog.model.Comment;
 import com.blog.model.Like;
+import com.blog.model.User;
 import com.blog.repository.BlogRepository;
 import com.blog.repository.CommentRepository;
 import com.blog.repository.LikeRepository;
+import com.blog.repository.UserRepository;
 import org.springframework.stereotype.Service;
 
 import java.util.Optional;
@@ -19,22 +21,24 @@ public class BlogService {
     private final BlogRepository blogRepository;
     private final CommentRepository commentRepository;
     private final LikeRepository likeRepository;
+    private final UserRepository userRepository;
 
-    public BlogService(BlogRepository blogRepository, CommentRepository commentRepository, LikeRepository likeRepository) {
+    public BlogService(BlogRepository blogRepository, CommentRepository commentRepository, LikeRepository likeRepository, UserRepository userRepository) {
         this.blogRepository = blogRepository;
         this.commentRepository = commentRepository;
         this.likeRepository = likeRepository;
+        this.userRepository = userRepository;
     }
 
     public void createBlog(CreateBlogDTO dto, Long authorId) {
-        // TODO check for existing author
+        User user = userRepository.findById(authorId).orElseThrow(() -> new NotFoundException("User not found"));
 
-        if (authorId == null || dto.getTitle() == null || dto.getTitle().isEmpty()) {
+        if (dto.getTitle() == null || dto.getTitle().isEmpty()) {
             throw new BadRequestException("Invalid blog data");
         }
 
         Blog blog = new Blog(
-                authorId,
+                user,
                 dto.getTitle(),
                 dto.getDescription()
         );
@@ -43,12 +47,12 @@ public class BlogService {
     }
 
     public void comment(Long blogId, String content, Long authorId) {
-        // TODO check for existing author
+        User user = userRepository.findById(authorId).orElseThrow(() -> new NotFoundException("User not found"));
 
         Blog blog = blogRepository.findById(blogId).orElseThrow(() -> new NotFoundException("Blog not found"));
 
         Comment comment = new Comment(
-                authorId,
+                user,
                 blog,
                 content
         );
@@ -60,7 +64,7 @@ public class BlogService {
     public void editComment(Long commentId, String content, Long authorId) {
         Comment comment = commentRepository.findById(commentId).orElseThrow(() -> new NotFoundException("Comment not found"));
 
-        if (!comment.getAuthorId().equals(authorId)) {
+        if (!comment.getAuthor().getId().equals(authorId)) {
             throw new ForbiddenException("You are not the author of this comment");
         }
 
@@ -71,10 +75,9 @@ public class BlogService {
     public void toggleLikeBlog(Long blogId, Long userId) {
         Blog blog = blogRepository.findById(blogId).orElseThrow(() -> new NotFoundException("Blog not found"));
 
-        // TODO check for existing user
+        User user = userRepository.findById(userId).orElseThrow(() -> new NotFoundException("User not found"));
 
-        // TODO change userId usage to user usage
-        Optional<Like> like = likeRepository.findByBlogIdAndUserId(blog.getId(), userId);
+        Optional<Like> like = likeRepository.findByBlogIdAndUserId(blog.getId(), user.getId());
 
         if (like.isPresent()) {
             blog.unlike(like.get());
@@ -82,7 +85,7 @@ public class BlogService {
             blogRepository.save(blog);
         } else {
             // TODO change userId usage to user usage
-            blog.like(new Like(userId, blog));
+            blog.like(new Like(user, blog));
             blogRepository.save(blog);
         }
     }

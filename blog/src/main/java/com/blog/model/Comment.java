@@ -10,8 +10,8 @@ public class Comment {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
-    @Column(nullable = false)
-    private Long authorId;
+    @ManyToOne(fetch = FetchType.EAGER, optional = false)
+    private User author;
     @ManyToOne(fetch = FetchType.LAZY)
     private Blog blog;
     @Column(nullable = false)
@@ -24,8 +24,8 @@ public class Comment {
     public Comment() {
     }
 
-    public Comment(Long authorId, Blog blog, String content) {
-        this.authorId = authorId;
+    public Comment(User author, Blog blog, String content) {
+        this.author = author;
         this.blog = blog;
         this.content = content;
         this.createdAt = new Timestamp(System.currentTimeMillis());
@@ -36,8 +36,8 @@ public class Comment {
         return id;
     }
 
-    public Long getAuthorId() {
-        return authorId;
+    public User getAuthor() {
+        return author;
     }
 
     public Blog getBlog() {

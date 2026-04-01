@@ -6,7 +6,6 @@ public class DetailViewDTO {
     private Long id;
     private String firstName;
     private String lastName;
-    private String email;
     private String profileImagePath;
     private String bio;
     private String motto;
@@ -19,7 +18,6 @@ public class DetailViewDTO {
         this.id = user.getId();
         this.firstName = user.getFirstName();
         this.lastName = user.getLastName();
-        this.email = user.getEmail();
         this.profileImagePath = user.getProfileImagePath();
         this.bio = user.getBio();
         this.motto = user.getMotto();
@@ -48,14 +46,6 @@ public class DetailViewDTO {
 
     public void setLastName(String lastName) {
         this.lastName = lastName;
-    }
-
-    public String getEmail() {
-        return email;
-    }
-
-    public void setEmail(String email) {
-        this.email = email;
     }
 
     public String getProfileImagePath() {
