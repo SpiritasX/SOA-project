@@ -2,6 +2,8 @@ services:
   auth:
     build:
       context: ./auth
+    environment:
+      JWT_SECRET: my-super-long-secret-key-that-is-at-least-64-characters-long-123456
     ports:
       - "8081:8080"
     depends_on:
@@ -13,6 +15,8 @@ services:
   stakeholders:
     build:
       context: ./stakeholders
+    environment:
+      JWT_SECRET: my-super-long-secret-key-that-is-at-least-64-characters-long-123456
     ports:
       - "8082:8080"
     depends_on:
@@ -24,6 +28,8 @@ services:
   blog:
     build:
       context: ./blog
+    environment:
+      JWT_SECRET: my-super-long-secret-key-that-is-at-least-64-characters-long-123456
     ports:
       - "8083:8080"
     depends_on:

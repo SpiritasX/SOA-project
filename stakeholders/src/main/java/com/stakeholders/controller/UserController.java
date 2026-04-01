@@ -1,9 +1,13 @@
 package com.stakeholders.controller;
 
 import com.stakeholders.dto.UpdateDTO;
+import com.stakeholders.dto.UserPrincipal;
 import com.stakeholders.service.UserService;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
+
+import java.util.Objects;
 
 @RestController
 @RequestMapping("/api/user")
@@ -14,16 +18,17 @@ public class UserController {
         this.userService = userService;
     }
 
-    // TODO remove path variable and use JWT
-    @GetMapping("/{id}")
-    public ResponseEntity<?> getProfile(@PathVariable Long id) {
-        return ResponseEntity.ok(userService.getUser(id));
+    @GetMapping
+    public ResponseEntity<?> getProfile(Authentication authentication) {
+        UserPrincipal user = (UserPrincipal) Objects.requireNonNull(authentication.getPrincipal());
+        return ResponseEntity.ok(userService.getUser(user.getId()));
     }
 
-    // TODO remove path variable and use JWT
-    @PatchMapping("/{id}")
-    public ResponseEntity<?> updateProfile(@PathVariable Long id, @RequestBody UpdateDTO dto) {
-        userService.updateUser(id, dto);
+    @PatchMapping
+    public ResponseEntity<?> updateProfile(Authentication authentication, @RequestBody UpdateDTO dto) {
+        UserPrincipal user = (UserPrincipal) Objects.requireNonNull(authentication.getPrincipal());
+
+        userService.updateUser(user.getId(), dto);
 
         return ResponseEntity.ok("User updated");
     }

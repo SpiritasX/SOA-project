@@ -27,13 +27,12 @@ public class AuthController {
 
     @PostMapping("/login")
     public ResponseEntity<?> login(@RequestBody LoginRequest request) {
-        boolean success = authService.login(request);
+        String token = authService.login(request);
 
-        if (!success) {
+        if (token == null) {
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Invalid credentials");
         }
 
-        // TODO return JWT
-        return ResponseEntity.ok("Login successful");
+        return ResponseEntity.ok(token);
     }
 }
