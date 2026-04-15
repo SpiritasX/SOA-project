@@ -1,4 +1,13 @@
 services:
+  gateway:
+    build: ./gateway
+    ports:
+      - "8080:8080"
+    depends_on:
+      - auth
+      - stakeholders
+      - blog
+
   auth:
     build:
       context: ./auth
@@ -77,7 +86,7 @@ services:
       PGADMIN_DEFAULT_EMAIL: admin@admin.com
       PGADMIN_DEFAULT_PASSWORD: admin
     ports:
-      - "8080:80"
+      - "8090:80"
     depends_on:
       - auth-db
       - blog-db
