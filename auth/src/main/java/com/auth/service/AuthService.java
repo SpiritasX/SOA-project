@@ -19,11 +19,13 @@ public class AuthService {
     private final AuthRepository authRepository;
     private final PasswordEncoder passwordEncoder;
     private final RabbitTemplate rabbitTemplate;
+    private final JwtService jwtService;
 
-    public AuthService(AuthRepository authRepository, PasswordEncoder passwordEncoder, RabbitTemplate rabbitTemplate) {
+    public AuthService(AuthRepository authRepository, PasswordEncoder passwordEncoder, RabbitTemplate rabbitTemplate, JwtService jwtService) {
         this.authRepository = authRepository;
         this.passwordEncoder = passwordEncoder;
         this.rabbitTemplate = rabbitTemplate;
+        this.jwtService = jwtService;
     }
 
     public void register(RegisterRequest request) {
@@ -55,9 +57,15 @@ public class AuthService {
         );
     }
 
-    public boolean login(LoginRequest request) {
-        User user = authRepository.findByUsername(request.getUsername()).orElseThrow(() -> new NotFoundException("User not found"));
-        return passwordEncoder.matches(request.getPassword(), user.getPassword());
+    public String login(LoginRequest request) {
+        User user = authRepository.findByUsername(request.getUsername())
+                .orElseThrow(() -> new NotFoundException("User not found"));
+
+        if (!passwordEncoder.matches(request.getPassword(), user.getPassword())) {
+            return null;
+        }
+
+        return jwtService.generateToken(user);
     }
 
     @RabbitListener(queues = "user.blocked.auth.queue")

@@ -1,9 +1,13 @@
 package com.blog.controller;
 
 import com.blog.dto.CreateBlogDTO;
+import com.blog.dto.UserPrincipal;
 import com.blog.service.BlogService;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
+
+import java.util.Objects;
 
 @RestController
 @RequestMapping("/api/blog")
@@ -14,33 +18,33 @@ public class BlogController {
         this.blogService = blogService;
     }
 
-    // TODO change param to JWT
     @PostMapping("/create")
-    public ResponseEntity<?> createBlog(@RequestBody CreateBlogDTO dto, @RequestParam Long userId) {
-        blogService.createBlog(dto, userId);
+    public ResponseEntity<?> createBlog(Authentication authentication, @RequestBody CreateBlogDTO dto) {
+        UserPrincipal user = (UserPrincipal) Objects.requireNonNull(authentication.getPrincipal());
+        blogService.createBlog(dto, user.getId());
         return ResponseEntity.ok().build();
     }
 
     // TODO add image to blog
 
-    // TODO change param to JWT
     @PostMapping("/{blogId}/comment")
-    public ResponseEntity<?> comment(@PathVariable Long blogId, @RequestBody String content, @RequestParam Long userId) {
-        blogService.comment(blogId, content, userId);
+    public ResponseEntity<?> comment(Authentication authentication, @PathVariable Long blogId, @RequestBody String content) {
+        UserPrincipal user = (UserPrincipal) Objects.requireNonNull(authentication.getPrincipal());
+        blogService.comment(blogId, content, user.getId());
         return ResponseEntity.ok().build();
     }
 
-    // TODO change param to JWT
     @PatchMapping("/comment/{commentId}/edit")
-    public ResponseEntity<?> editComment(@PathVariable Long commentId, @RequestBody String content, @RequestParam Long userId) {
-        blogService.editComment(commentId, content, userId);
+    public ResponseEntity<?> editComment(Authentication authentication, @PathVariable Long commentId, @RequestBody String content) {
+        UserPrincipal user = (UserPrincipal) Objects.requireNonNull(authentication.getPrincipal());
+        blogService.editComment(commentId, content, user.getId());
         return ResponseEntity.ok().build();
     }
 
-    // TODO change param to JWT
     @PostMapping("/{blogId}/like")
-    public ResponseEntity<?> like(@PathVariable Long blogId, @RequestParam Long userId) {
-        blogService.toggleLikeBlog(blogId, userId);
+    public ResponseEntity<?> like(Authentication authentication, @PathVariable Long blogId) {
+        UserPrincipal user = (UserPrincipal) Objects.requireNonNull(authentication.getPrincipal());
+        blogService.toggleLikeBlog(blogId, user.getId());
         return ResponseEntity.ok().build();
     }
 }
