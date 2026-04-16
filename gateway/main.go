@@ -3,13 +3,22 @@ package main
 import (
 	"log"
 	"net/http"
+
+	"gateway/internal/config"
+	"gateway/internal/router"
 )
 
 func main() {
-	http.HandleFunc("/health", func(w http.ResponseWriter, r *http.Request) {
-		w.Write([]byte("Gateway running"))
-	})
+	cfg := config.Load()
+
+	r := router.New(cfg)
 
 	log.Println("Gateway running on :8080")
-	log.Fatal(http.ListenAndServe(":8080", nil))
+
+	srv := &http.Server{
+		Addr:    ":8080",
+		Handler: r,
+	}
+
+	log.Fatal(srv.ListenAndServe())
 }

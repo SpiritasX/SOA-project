@@ -1,20 +1,22 @@
 services:
   gateway:
     build: ./gateway
+    environment:
+      JWT_SECRET: my-super-long-secret-key-that-is-at-least-64-characters-long-123456
     ports:
       - "8080:8080"
     depends_on:
       - auth
       - stakeholders
       - blog
+    networks:
+      - soa-net
 
   auth:
     build:
       context: ./auth
     environment:
       JWT_SECRET: my-super-long-secret-key-that-is-at-least-64-characters-long-123456
-    ports:
-      - "8081:8080"
     depends_on:
       - auth-db
       - rabbitmq
@@ -26,8 +28,6 @@ services:
       context: ./stakeholders
     environment:
       JWT_SECRET: my-super-long-secret-key-that-is-at-least-64-characters-long-123456
-    ports:
-      - "8082:8080"
     depends_on:
       - stakeholders-db
       - rabbitmq
@@ -39,8 +39,6 @@ services:
       context: ./blog
     environment:
       JWT_SECRET: my-super-long-secret-key-that-is-at-least-64-characters-long-123456
-    ports:
-      - "8083:8080"
     depends_on:
       - blog-db
       - rabbitmq
@@ -53,8 +51,6 @@ services:
       POSTGRES_DB: auth-db
       POSTGRES_USER: postgres
       POSTGRES_PASSWORD: postgres
-    ports:
-      - "5433:5432"
     networks:
       - soa-net
 
@@ -64,8 +60,6 @@ services:
       POSTGRES_DB: stakeholders-db
       POSTGRES_USER: postgres
       POSTGRES_PASSWORD: postgres
-    ports:
-      - "5434:5432"
     networks:
       - soa-net
 
@@ -75,8 +69,6 @@ services:
       POSTGRES_DB: blog-db
       POSTGRES_USER: postgres
       POSTGRES_PASSWORD: postgres
-    ports:
-      - "5435:5432"
     networks:
       - soa-net
 
@@ -96,14 +88,13 @@ services:
 
   rabbitmq:
     image: rabbitmq:4.2.5-management
-    ports:
-      - "5672:5672"   # AMQP (for apps)
-      - "15672:15672" # Management UI
     environment:
       RABBITMQ_DEFAULT_USER: guest
       RABBITMQ_DEFAULT_PASS: guest
+    ports:
+      - "15672:15672"
     networks:
-      - soa-net
+        - soa-net
 
 networks:
   soa-net:
