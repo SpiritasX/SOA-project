@@ -1,0 +1,84 @@
+package com.example.auth.service;
+
+import com.example.auth.dto.LoginRequest;
+import com.example.auth.dto.RegisterRequest;
+import com.example.auth.dto.UserRegisteredEvent;
+import com.example.common.exception.BadRequestException;
+import com.example.common.exception.ForbiddenException;
+import com.example.common.exception.NotFoundException;
+import com.example.common.model.Role;
+import com.example.auth.model.User;
+import com.example.auth.repository.AuthRepository;
+import org.springframework.amqp.rabbit.annotation.RabbitListener;
+import org.springframework.amqp.rabbit.core.RabbitTemplate;
+import org.springframework.security.crypto.password.PasswordEncoder;
+import org.springframework.stereotype.Service;
+
+@Service
+public class AuthService {
+    private final AuthRepository authRepository;
+    private final PasswordEncoder passwordEncoder;
+    private final RabbitTemplate rabbitTemplate;
+    private final JwtService jwtService;
+
+    public AuthService(AuthRepository authRepository, PasswordEncoder passwordEncoder, RabbitTemplate rabbitTemplate, JwtService jwtService) {
+        this.authRepository = authRepository;
+        this.passwordEncoder = passwordEncoder;
+        this.rabbitTemplate = rabbitTemplate;
+        this.jwtService = jwtService;
+    }
+
+    public void register(RegisterRequest request) {
+        if (authRepository.findByUsername(request.getUsername()).isPresent()) {
+            throw new BadRequestException("Username already taken");
+        }
+
+        if (authRepository.findByEmail(request.getEmail()).isPresent()) {
+            throw new BadRequestException("Email already taken");
+        }
+
+        if (request.getRole().equals(Role.ADMINISTRATOR)) {
+            throw new ForbiddenException("Cannot create admin user");
+        }
+
+        User user = new User(
+                request.getUsername(),
+                passwordEncoder.encode(request.getPassword()),
+                request.getEmail(),
+                request.getRole()
+        );
+
+        authRepository.save(user);
+
+        rabbitTemplate.convertAndSend(
+                "user.exchange",
+                "user.registered",
+                new UserRegisteredEvent(user.getId(), request.getFirstName(), request.getLastName(), user.getRole())
+        );
+    }
+
+    public String login(LoginRequest request) {
+        User user = authRepository.findByUsername(request.getUsername())
+                .orElseThrow(() -> new NotFoundException("User not found"));
+
+        if (!passwordEncoder.matches(request.getPassword(), user.getPassword())) {
+            return null;
+        }
+
+        return jwtService.generateToken(user);
+    }
+
+    @RabbitListener(queues = "user.blocked.auth.queue")
+    public void handleUserBlockedEvent(Long userId) {
+        User user = authRepository.findById(userId).orElseThrow(() -> new NotFoundException("User not found"));
+        user.block();
+        authRepository.save(user);
+    }
+
+    @RabbitListener(queues = "user.unblocked.auth.queue")
+    public void handleUserUnblockedEvent(Long userId) {
+        User user = authRepository.findById(userId).orElseThrow(() -> new NotFoundException("User not found"));
+        user.unblock();
+        authRepository.save(user);
+    }
+}
