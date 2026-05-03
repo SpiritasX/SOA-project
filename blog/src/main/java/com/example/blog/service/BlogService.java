@@ -1,6 +1,7 @@
 package com.example.blog.service;
 
 import com.example.blog.dto.CreateBlogDTO;
+import com.example.blog.dto.SmallBlogDTO;
 import com.example.common.exception.BadRequestException;
 import com.example.common.exception.ForbiddenException;
 import com.example.common.exception.NotFoundException;
@@ -14,6 +15,7 @@ import com.example.blog.repository.LikeRepository;
 import com.example.blog.repository.UserRepository;
 import org.springframework.stereotype.Service;
 
+import java.util.List;
 import java.util.Optional;
 
 @Service
@@ -28,6 +30,15 @@ public class BlogService {
         this.commentRepository = commentRepository;
         this.likeRepository = likeRepository;
         this.userRepository = userRepository;
+    }
+
+    public SmallBlogDTO getBlog(Long id) {
+        Blog blog = blogRepository.findById(id).orElseThrow(() -> new NotFoundException("Blog not found"));
+        return new SmallBlogDTO(blog);
+    }
+
+    public List<SmallBlogDTO> getUserBlogs(Long userId) {
+        return blogRepository.findAllByAuthorId(userId).stream().map(SmallBlogDTO::new).toList();
     }
 
     public void createBlog(CreateBlogDTO dto, Long authorId) {

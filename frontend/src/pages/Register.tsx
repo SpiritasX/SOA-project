@@ -44,7 +44,7 @@ function Register() {
         <input type="text" placeholder="Last Name" value={lastName} onChange={(e) => setLastName(e.target.value)} />
         <select value={role} onChange={(e) => setRole(e.target.value)}>
           <option value="TOURIST">Tourist</option>
-          <option value="GUIDE">Admin</option>
+          <option value="GUIDE">Guide</option>
         </select>
         <button onClick={handleRegister}>Register</button>
       </div>

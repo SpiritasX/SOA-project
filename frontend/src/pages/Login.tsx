@@ -1,5 +1,7 @@
-import {useState} from "react";
+import { useEffect, useState } from "react";
 import { apiFetch } from "../api/client";
+import { useNavigate } from "react-router-dom";
+import { useAuth } from "../context/AuthContext";
 
 function Login() {
   const [username, setUsername] = useState('');
@@ -7,12 +9,26 @@ function Login() {
 
   const [error, setError] = useState('');
 
+  const navigate = useNavigate();
+  const { auth, login } = useAuth();
+
+  useEffect(() => {
+    if (!auth.role) return;
+
+    if (auth.role === 'TOURIST' || auth.role === 'GUIDE') {
+      navigate('/profile');
+    } else if (auth.role === 'ADMINISTRATOR') {
+      navigate('/admin');
+    }
+  }, [auth.role])
+
   async function handleLogin() {
     try {
       const res = await apiFetch('/api/auth/login', {method: 'POST', body: JSON.stringify({username, password})});
       if (res.ok) {
         setError('');
-        localStorage.setItem("token", await res.text());
+        const token = await res.text();
+        login(token);
       } else {
         setError(await res.text());
       }

@@ -21,7 +21,7 @@ func New(cfg config.Config) http.Handler {
 	publicMux.HandleFunc("/api/auth/", authProxy)
 
 	authMw := middleware.NewAuthMiddleware(cfg.JWTSecret)
-	requireAdmin := middleware.RequireRole("ADMIN")
+	requireAdmin := middleware.RequireRole("ADMINISTRATOR")
 
 	protectedMux.Handle(
 		"/api/blog/",
