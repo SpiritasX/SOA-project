@@ -1,10 +1,10 @@
 import { apiFetch } from "./client";
 
-export const getUser = (id: number) =>
-  apiFetch(`/api/user/${id}`);
+export const getUser = () =>
+  apiFetch('/api/user');
 
-export const updateUser = (id: number, data: any) =>
-  apiFetch(`/api/user/${id}`, {
+export const updateUser = (data: any) =>
+  apiFetch('/api/user', {
     method: "PATCH",
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify(data),

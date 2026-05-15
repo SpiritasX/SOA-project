@@ -1,11 +1,16 @@
 import { useEffect, useState } from "react";
-import {getUsers} from "../api/user.ts";
+import {
+  getUsers,
+  blockUser,
+  unblockUser
+} from "../api/user.ts";
 
 type User = {
   id: string;
   firstName: string;
   lastName: string;
   role: string;
+  status: string;
 };
 
 type Page<T> = {
@@ -34,6 +39,16 @@ function Admin() {
     fetchUsers();
   }, [page, size]);
 
+  const handleToggleBlock = async (user: User) => {
+    if (user.status === "BLOCKED") {
+      await unblockUser(Number(user.id));
+    } else {
+      await blockUser(Number(user.id));
+    }
+
+    fetchUsers();
+  };
+
   return (
     <div>
       <h1>Admin</h1>
@@ -43,7 +58,20 @@ function Admin() {
         <ul>
           {users.map((user: User) => (
             <li key={user.id}>
-              {user.firstName} {user.lastName} - {user.role}
+              {user.firstName} {user.lastName}
+              {" - "}
+              {user.role}
+              {" - "}
+              {user.status}
+
+              <button
+                style={{ marginLeft: "10px" }}
+                onClick={() => handleToggleBlock(user)}
+              >
+                {user.status === "BLOCKED"
+                  ? "Unblock"
+                  : "Block"}
+              </button>
             </li>
           ))}
         </ul>

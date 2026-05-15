@@ -27,14 +27,24 @@ func New(cfg config.Config) http.Handler {
 		"/api/blog/",
 		authMw.Middleware(blogProxy))
 	protectedMux.Handle(
+		"/api/blog",
+		authMw.Middleware(blogProxy))
+	protectedMux.Handle(
 		"/api/user/",
+		authMw.Middleware(userProxy))
+	protectedMux.Handle(
+		"/api/user",
 		authMw.Middleware(userProxy))
 	protectedMux.Handle(
 		"/api/admin/",
 		authMw.Middleware(requireAdmin(adminProxy)))
+	protectedMux.Handle(
+		"/api/admin",
+		authMw.Middleware(requireAdmin(adminProxy)))
 
 	rootMux := http.NewServeMux()
 	rootMux.Handle("/api/auth/", publicMux)
+	rootMux.Handle("/api/auth", publicMux)
 	rootMux.Handle("/", protectedMux)
 
 	return middleware.CORS(rootMux)
