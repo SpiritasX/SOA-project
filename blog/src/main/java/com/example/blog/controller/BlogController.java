@@ -18,7 +18,7 @@ public class BlogController {
         this.blogService = blogService;
     }
 
-    @GetMapping("/{blogId}")
+    @GetMapping("/{blogId:\\d+}")
     public ResponseEntity<?> getBlog(@PathVariable Long blogId) {
         return ResponseEntity.ok(blogService.getBlog(blogId));
     }

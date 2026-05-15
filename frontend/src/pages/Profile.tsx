@@ -1,5 +1,6 @@
 import {useEffect, useState} from "react";
 import {getMyBlogs} from "../api/blog.ts";
+import { Link } from "react-router-dom";
 
 type Comment = {
   id: string;
@@ -45,7 +46,9 @@ function Profile() {
       <ul>
         {blogs.map((blog: BlogPost) => (
           <li key={blog.id}>
-            <h2>{blog.title}</h2>
+            <Link to={`/blog/${blog.id}`}>
+              <h2>{blog.title}</h2>
+            </Link>
             <p>{blog.description}</p>
             <p>Created At: {new Date(blog.createdAt).toLocaleString()}</p>
             <ul>
