@@ -18,6 +18,18 @@ public class BlogController {
         this.blogService = blogService;
     }
 
+    @GetMapping("/{blogId:\\d+}")
+    public ResponseEntity<?> getBlog(@PathVariable Long blogId) {
+        return ResponseEntity.ok(blogService.getBlog(blogId));
+    }
+
+    @GetMapping("/me")
+    public ResponseEntity<?> getMyBlogs(Authentication authentication) {
+        UserPrincipal user = (UserPrincipal) Objects.requireNonNull(authentication.getPrincipal());
+
+        return ResponseEntity.ok(blogService.getUserBlogs(user.getId()));
+    }
+
     @PostMapping("/create")
     public ResponseEntity<?> createBlog(Authentication authentication, @RequestBody CreateBlogDTO dto) {
         UserPrincipal user = (UserPrincipal) Objects.requireNonNull(authentication.getPrincipal());

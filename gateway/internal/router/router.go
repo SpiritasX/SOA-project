@@ -21,21 +21,31 @@ func New(cfg config.Config) http.Handler {
 	publicMux.HandleFunc("/api/auth/", authProxy)
 
 	authMw := middleware.NewAuthMiddleware(cfg.JWTSecret)
-	requireAdmin := middleware.RequireRole("ADMIN")
+	requireAdmin := middleware.RequireRole("ADMINISTRATOR")
 
 	protectedMux.Handle(
 		"/api/blog/",
-		authMw.Middleware(http.HandlerFunc(blogProxy)))
+		authMw.Middleware(blogProxy))
+	protectedMux.Handle(
+		"/api/blog",
+		authMw.Middleware(blogProxy))
 	protectedMux.Handle(
 		"/api/user/",
-		authMw.Middleware(http.HandlerFunc(userProxy)))
+		authMw.Middleware(userProxy))
+	protectedMux.Handle(
+		"/api/user",
+		authMw.Middleware(userProxy))
 	protectedMux.Handle(
 		"/api/admin/",
-		authMw.Middleware(requireAdmin(http.HandlerFunc(adminProxy))))
+		authMw.Middleware(requireAdmin(adminProxy)))
+	protectedMux.Handle(
+		"/api/admin",
+		authMw.Middleware(requireAdmin(adminProxy)))
 
 	rootMux := http.NewServeMux()
 	rootMux.Handle("/api/auth/", publicMux)
+	rootMux.Handle("/api/auth", publicMux)
 	rootMux.Handle("/", protectedMux)
 
-	return rootMux
+	return middleware.CORS(rootMux)
 }
