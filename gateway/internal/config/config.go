@@ -15,6 +15,7 @@ func Load() Config {
 			"auth":        "http://auth:8080",
 			"stakeholders": "http://stakeholders:8080",
 			"blog":        "http://blog:8080",
+			"followers":   "http://followers:8080",
 		},
 	}
 }

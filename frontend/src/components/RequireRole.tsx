@@ -10,6 +10,10 @@ type Props = {
 export default function RequireRole({ children, roles }: Props) {
   const { auth } = useAuth();
 
+  if (auth.loading) {
+    return <div>Loading...</div>;
+  }
+
   if (!auth.token) {
     return <Navigate to="/login" replace />;
   }

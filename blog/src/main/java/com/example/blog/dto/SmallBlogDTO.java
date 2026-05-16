@@ -12,6 +12,7 @@ import java.util.Set;
 
 public class SmallBlogDTO {
     private Long id;
+    private Long authorId;
     private String title;
     private String description;
     private Timestamp createdAt;
@@ -20,6 +21,7 @@ public class SmallBlogDTO {
 
     public SmallBlogDTO(Blog blog) {
         this.id = blog.getId();
+        this.authorId = blog.getAuthor().getId();
         this.title = blog.getTitle();
         this.description = blog.getDescription();
         this.createdAt = blog.getCreatedAt();
@@ -33,6 +35,14 @@ public class SmallBlogDTO {
 
     public void setId(Long id) {
         this.id = id;
+    }
+
+    public Long getAuthorId() {
+        return authorId;
+    }
+
+    public void setAuthorId(Long authorId) {
+        this.authorId = authorId;
     }
 
     public String getTitle() {

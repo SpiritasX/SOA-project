@@ -100,4 +100,8 @@ public class BlogService {
             blogRepository.save(blog);
         }
     }
+
+    public List<SmallBlogDTO> getBlogsByUserIds(List<Long> userIds) {
+        return blogRepository.findByAuthorIdIn(userIds).stream().map(SmallBlogDTO::new).toList();
+    }
 }

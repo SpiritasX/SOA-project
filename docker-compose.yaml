@@ -9,6 +9,7 @@ services:
       - auth
       - stakeholders
       - blog
+      - followers
     networks:
       - soa-net
 
@@ -17,6 +18,9 @@ services:
       context: ./auth
     environment:
       JWT_SECRET: my-super-long-secret-key-that-is-at-least-64-characters-long-123456
+      APP_ADMIN_USERNAME: admin
+      APP_ADMIN_PASSWORD: admin
+      APP_ADMIN_EMAIL: admin@example.com
     depends_on:
       - auth-db
       - rabbitmq
@@ -45,37 +49,69 @@ services:
     networks:
       - soa-net
 
+  followers:
+    build:
+      context: ./followers
+    environment:
+      NEO4J_URI: bolt://followers-db:7687
+      NEO4J_USER: neo4j
+      NEO4J_PASSWORD: password
+      JWT_SECRET: my-super-long-secret-key-that-is-at-least-64-characters-long-123456
+    depends_on:
+      - followers-db
+      - rabbitmq
+    networks:
+      - soa-net
+
   auth-db:
-    image: postgres
+    image: postgres:17
     environment:
       POSTGRES_DB: auth-db
       POSTGRES_USER: postgres
       POSTGRES_PASSWORD: postgres
+    volumes:
+      - auth_postgres_data:/var/lib/postgresql/data
     networks:
       - soa-net
 
   stakeholders-db:
-    image: postgres
+    image: postgres:17
     environment:
       POSTGRES_DB: stakeholders-db
       POSTGRES_USER: postgres
       POSTGRES_PASSWORD: postgres
+    volumes:
+      - stakeholders_postgres_data:/var/lib/postgresql/data
     networks:
       - soa-net
 
   blog-db:
-    image: postgres
+    image: postgres:17
     environment:
       POSTGRES_DB: blog-db
       POSTGRES_USER: postgres
       POSTGRES_PASSWORD: postgres
+    volumes:
+      - blog_postgres_data:/var/lib/postgresql/data
+    networks:
+      - soa-net
+
+  followers-db:
+    image: neo4j:5
+    environment:
+      NEO4J_AUTH: neo4j/password
+    ports:
+      - "7474:7474"
+      - "7687:7687"
+    volumes:
+      - neo4j_data:/data
     networks:
       - soa-net
 
   pgadmin:
     image: dpage/pgadmin4
     environment:
-      PGADMIN_DEFAULT_EMAIL: admin@admin.com
+      PGADMIN_DEFAULT_EMAIL: admin@example.com
       PGADMIN_DEFAULT_PASSWORD: admin
     ports:
       - "8090:80"
@@ -93,8 +129,17 @@ services:
       RABBITMQ_DEFAULT_PASS: guest
     ports:
       - "15672:15672"
+    volumes:
+      - rabbitmq_data:/var/lib/rabbitmq
     networks:
         - soa-net
+
+volumes:
+  auth_postgres_data:
+  stakeholders_postgres_data:
+  blog_postgres_data:
+  neo4j_data:
+  rabbitmq_data:
 
 networks:
   soa-net:

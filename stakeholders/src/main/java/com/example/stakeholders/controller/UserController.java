@@ -7,6 +7,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.List;
 import java.util.Objects;
 
 @RestController
@@ -31,5 +32,15 @@ public class UserController {
         userService.updateUser(user.getId(), dto);
 
         return ResponseEntity.ok("User updated");
+    }
+
+    @GetMapping("/{id:\\d+}")
+    public ResponseEntity<?> getUser(Authentication authentication, @PathVariable Long id) {
+        return ResponseEntity.ok(userService.getUser(id));
+    }
+
+    @PostMapping("/batch")
+    public ResponseEntity<?> getUsersBatch(Authentication authentication, @RequestBody List<Long> ids) {
+        return ResponseEntity.ok(userService.getUsersByIds(ids));
     }
 }

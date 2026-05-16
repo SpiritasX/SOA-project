@@ -1,5 +1,8 @@
 import { apiFetch } from "./client";
 
+export const getBlog = (id: number) =>
+  apiFetch(`/api/blog/${id}`);
+
 export const createBlog = (data: any) =>
   apiFetch("/api/blog/create", {
     method: "POST",
@@ -28,3 +31,6 @@ export const likeBlog = (blogId: number) =>
 
 export const getMyBlogs = () =>
   apiFetch("/api/blog/me");
+
+export const getFeed = () =>
+  apiFetch("/api/gateway/feed");

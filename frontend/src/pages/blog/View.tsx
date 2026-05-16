@@ -1,11 +1,11 @@
 import { useEffect, useState } from "react";
 import { useParams } from "react-router-dom";
 import {
+  getBlog,
   addComment,
   likeBlog,
   editComment,
 } from "../../api/blog";
-import { apiFetch } from "../../api/client";
 
 type Comment = {
   id: string;
@@ -37,7 +37,7 @@ function View() {
 
   const fetchBlog = async () => {
     try {
-      const res = await apiFetch(`/api/blog/${id}`);
+      const res = await getBlog(Number(id));
 
       if (!res.ok) {
         setError(await res.text());

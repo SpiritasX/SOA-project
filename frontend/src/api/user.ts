@@ -1,6 +1,9 @@
 import { apiFetch } from "./client";
 
-export const getUser = () =>
+export const getUser = (id: number) =>
+  apiFetch(`/api/user/${id}`);
+
+export const getMe = () =>
   apiFetch('/api/user');
 
 export const updateUser = (data: any) =>
@@ -21,3 +24,6 @@ export const blockUser = (id: number) =>
 
 export const unblockUser = (id: number) =>
   apiFetch(`/api/admin/users/${id}/unblock`, { method: "PATCH" });
+
+export const getRecommendations = () =>
+  apiFetch("/api/gateway/recommendations");

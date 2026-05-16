@@ -1,10 +1,12 @@
 import { BrowserRouter as Router, Routes, Route, Link } from 'react-router-dom';
+import Home from './pages/Home';
 import Login from './pages/Login';
 import Register from './pages/Register';
 import { useAuth } from './context/AuthContext';
 import Profile from "./pages/Profile";
 import CreateBlog from "./pages/blog/Create";
 import ViewBlog from "./pages/blog/View";
+import User from "./pages/User";
 import Admin from "./pages/Admin.tsx";
 import RequireRole from "./components/RequireRole.tsx";
 
@@ -24,10 +26,7 @@ function App() {
       <main style={{ padding: '20px' }}>
         <Routes>
           <Route path="/" element={
-            <div>
-              <h1>Welcome to the App</h1>
-              <p>This is a minimal starting point.</p>
-            </div>
+            <Home />
           } />
           <Route path="/login" element={<Login />} />
           <Route path="/register" element={<Register />} />
@@ -36,18 +35,25 @@ function App() {
               <Profile />
             </RequireRole>
           } />
-          <Route path="/admin" element={
-            <RequireRole roles={["ADMINISTRATOR"]}>
-              <Admin />
-            </RequireRole>
-          } />
           <Route path="/blog/create" element={
             <RequireRole>
               <CreateBlog />
             </RequireRole>
           } />
           <Route path="/blog/:id" element={
-            <ViewBlog />
+            <RequireRole>
+              <ViewBlog />
+            </RequireRole>
+          } />
+          <Route path="/user/:id" element={
+            <RequireRole>
+              <User />
+            </RequireRole>
+          } />
+          <Route path="/admin" element={
+            <RequireRole roles={["ADMINISTRATOR"]}>
+              <Admin />
+            </RequireRole>
           } />
         </Routes>
       </main>

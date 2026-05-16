@@ -8,6 +8,7 @@ type AuthState = {
   token: string | null;
   role: string | null;
   userId: string | null;
+  loading: boolean;
 };
 
 const AuthContext = createContext<{
@@ -15,7 +16,7 @@ const AuthContext = createContext<{
   login: (token: string) => void;
   logout: () => void;
 }>({
-  auth: { token: null, role: null, userId: null },
+  auth: { token: null, role: null, userId: null, loading: true },
   login: () => {},
   logout: () => {}
 });
@@ -24,7 +25,8 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [auth, setAuth] = useState<AuthState>({
     token: null,
     role: null,
-    userId: null
+    userId: null,
+    loading: true
   });
 
   useEffect(() => {
@@ -34,9 +36,18 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       setAuth({
         token,
         role: payload.role,
-        userId: payload.sub
+        userId: payload.sub,
+        loading: false
       });
+      return;
     }
+
+    setAuth({
+      token: null,
+      role: null,
+      userId: null,
+      loading: false
+    });
   }, []);
 
   const login = (token: string) => {
@@ -46,13 +57,14 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     setAuth({
       token,
       role: payload.role,
-      userId: payload.sub
+      userId: payload.sub,
+      loading: false
     });
   };
 
   const logout = () => {
     localStorage.removeItem("token");
-    setAuth({ token: null, role: null, userId: null });
+    setAuth({ token: null, role: null, userId: null, loading: false });
   };
 
   return (

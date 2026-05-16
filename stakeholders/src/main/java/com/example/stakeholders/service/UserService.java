@@ -12,6 +12,8 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Service;
 
+import java.util.List;
+
 @Service
 public class UserService {
     private final UserRepository userRepository;
@@ -71,5 +73,9 @@ public class UserService {
                 event.getRole()
         );
         userRepository.save(user);
+    }
+
+    public List<ListViewDTO> getUsersByIds(List<Long> ids) {
+        return userRepository.findAllById(ids).stream().map(ListViewDTO::new).toList();
     }
 }

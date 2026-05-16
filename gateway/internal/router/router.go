@@ -2,14 +2,17 @@ package router
 
 import (
 	"net/http"
+	"time"
 
+	"gateway/internal/aggregate"
+	"gateway/internal/client"
 	"gateway/internal/config"
+	"gateway/internal/handler"
 	"gateway/internal/middleware"
 	"gateway/internal/proxy"
 )
 
 func New(cfg config.Config) http.Handler {
-
 	publicMux := http.NewServeMux()
 	protectedMux := http.NewServeMux()
 
@@ -17,30 +20,42 @@ func New(cfg config.Config) http.Handler {
 	blogProxy := proxy.New(cfg.Services["blog"])
 	userProxy := proxy.New(cfg.Services["stakeholders"])
 	adminProxy := proxy.New(cfg.Services["stakeholders"])
+	followersProxy := proxy.New(cfg.Services["followers"])
+
+	httpClient := &http.Client{
+		Timeout: 5 * time.Second,
+	}
+
+	followersClient := client.NewFollowersClient(cfg.Services["followers"], httpClient)
+	usersClient := client.NewUsersClient(cfg.Services["stakeholders"], httpClient)
+	blogClient := client.NewBlogClient(cfg.Services["blog"], httpClient)
+
+	recommendationService := aggregate.NewRecommendationService(followersClient, usersClient)
+	feedService := aggregate.NewFeedService(followersClient, blogClient)
+
+	gatewayHandler := handler.NewGatewayHandler(recommendationService, feedService)
+
+	commentGuard := middleware.CommentGuard(blogClient, followersClient)
 
 	publicMux.HandleFunc("/api/auth/", authProxy)
 
 	authMw := middleware.NewAuthMiddleware(cfg.JWTSecret)
 	requireAdmin := middleware.RequireRole("ADMINISTRATOR")
 
-	protectedMux.Handle(
-		"/api/blog/",
-		authMw.Middleware(blogProxy))
-	protectedMux.Handle(
-		"/api/blog",
-		authMw.Middleware(blogProxy))
-	protectedMux.Handle(
-		"/api/user/",
-		authMw.Middleware(userProxy))
-	protectedMux.Handle(
-		"/api/user",
-		authMw.Middleware(userProxy))
-	protectedMux.Handle(
-		"/api/admin/",
-		authMw.Middleware(requireAdmin(adminProxy)))
-	protectedMux.Handle(
-		"/api/admin",
-		authMw.Middleware(requireAdmin(adminProxy)))
+	protectedMux.Handle("/api/blog/", authMw.Middleware(commentGuard(blogProxy)))
+	protectedMux.Handle("/api/blog", authMw.Middleware(blogProxy))
+
+	protectedMux.Handle("/api/user/", authMw.Middleware(userProxy))
+	protectedMux.Handle("/api/user", authMw.Middleware(userProxy))
+
+	protectedMux.Handle("/api/followers/", authMw.Middleware(followersProxy))
+	protectedMux.Handle("/api/followers", authMw.Middleware(followersProxy))
+
+	protectedMux.Handle("/api/gateway/recommendations", authMw.Middleware(http.HandlerFunc(gatewayHandler.GetRecommendations)))
+	protectedMux.Handle("/api/gateway/feed", authMw.Middleware(http.HandlerFunc(gatewayHandler.GetFeed)))
+
+	protectedMux.Handle("/api/admin/", authMw.Middleware(requireAdmin(adminProxy)))
+	protectedMux.Handle("/api/admin", authMw.Middleware(requireAdmin(adminProxy)))
 
 	rootMux := http.NewServeMux()
 	rootMux.Handle("/api/auth/", publicMux)

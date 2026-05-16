@@ -7,6 +7,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.List;
 import java.util.Objects;
 
 @RestController
@@ -21,6 +22,11 @@ public class BlogController {
     @GetMapping("/{blogId:\\d+}")
     public ResponseEntity<?> getBlog(@PathVariable Long blogId) {
         return ResponseEntity.ok(blogService.getBlog(blogId));
+    }
+
+    @PostMapping("/by-user-ids")
+    public ResponseEntity<?> getBlogsByUserIds(Authentication authentication, @RequestBody List<Long> userIds) {
+        return ResponseEntity.ok(blogService.getBlogsByUserIds(userIds));
     }
 
     @GetMapping("/me")

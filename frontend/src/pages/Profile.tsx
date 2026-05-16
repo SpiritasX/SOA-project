@@ -1,6 +1,6 @@
 import {useEffect, useState} from "react";
-import {getMyBlogs} from "../api/blog.ts";
-import { getUser, updateUser } from "../api/user.ts";
+import { getMyBlogs } from "../api/blog.ts";
+import { getMe, updateUser, getRecommendations } from "../api/user.ts";
 import { Link } from "react-router-dom";
 
 type User = {
@@ -31,7 +31,8 @@ type BlogPost = {
 }
 
 function Profile() {
-  const [ blogs, setBlogs ] = useState<BlogPost[]>([]);
+  const [blogs, setBlogs] = useState<BlogPost[]>([]);
+  const [recommendations, setRecommendations] = useState<User[]>([]);
   const [user, setUser] = useState<User | null>(null);
   const [editing, setEditing] = useState(false);
   const [formData, setFormData] = useState({
@@ -45,7 +46,7 @@ function Profile() {
 
   const fetchUser = async () => {
     try {
-      const response = await getUser();
+      const response = await getMe();
 
       if (!response.ok) {
         setError(await response.text());
@@ -74,6 +75,7 @@ function Profile() {
       const response = await getMyBlogs();
       if (!response.ok) {
         setError(await response.text());
+        return;
       }
       const data = await response.json();
       setBlogs(data);
@@ -81,6 +83,20 @@ function Profile() {
       console.error('Error fetching blogs:', error);
     }
   }
+
+  const fetchRecommendations = async () => {
+    try {
+      const response = await getRecommendations();
+      if (!response.ok) {
+        setError(await response.text());
+        return;
+      }
+      const data = await response.json();
+      setRecommendations(data);
+    } catch (error) {
+      console.error('Error fetching recommendations:', error);
+    }
+  };
 
   const handleSave = async () => {
     try {
@@ -102,6 +118,7 @@ function Profile() {
   useEffect(() => {
     fetchUser();
     fetchBlogs();
+    fetchRecommendations();
   }, []);
 
   return (
@@ -219,25 +236,46 @@ function Profile() {
           </>
         )}
       </div>
-      <ul>
-        {blogs.map((blog: BlogPost) => (
-          <li key={blog.id}>
-            <Link to={`/blog/${blog.id}`}>
-              <h2>{blog.title}</h2>
-            </Link>
-            <p>{blog.description}</p>
-            <p>Created At: {new Date(blog.createdAt).toLocaleString()}</p>
-            <ul>
-              {blog.comments.map((comment: Comment) => (
-                <li key={comment.id}>
-                  <p>{comment.content}</p>
-                  <p>Created At: {new Date(comment.createdAt).toLocaleString()}</p>
-                </li>
-              ))}
-            </ul>
-          </li>
-        ))}
-      </ul>
+      <div style={{ marginTop: "30px" }}>
+        <h2>Recommended for You</h2>
+        {recommendations.length > 0 ? (
+          <ul>
+            {recommendations.map((rec) => (
+              <li key={rec.id}>
+                <Link to={`/user/${rec.id}`}>
+                  {rec.firstName} {rec.lastName}
+                </Link>
+                {rec.motto && <span> - {rec.motto}</span>}
+              </li>
+            ))}
+          </ul>
+        ) : (
+          <p>No recommendations at the moment.</p>
+        )}
+      </div>
+
+      <div style={{ marginTop: "30px" }}>
+        <h2>My Blogs</h2>
+        <ul>
+          {blogs.map((blog: BlogPost) => (
+            <li key={blog.id}>
+              <Link to={`/blog/${blog.id}`}>
+                <h2>{blog.title}</h2>
+              </Link>
+              <p>{blog.description}</p>
+              <p>Created At: {new Date(blog.createdAt).toLocaleString()}</p>
+              <ul>
+                {blog.comments.map((comment: Comment) => (
+                  <li key={comment.id}>
+                    <p>{comment.content}</p>
+                    <p>Created At: {new Date(comment.createdAt).toLocaleString()}</p>
+                  </li>
+                ))}
+              </ul>
+            </li>
+          ))}
+        </ul>
+      </div>
       <div>
         {error && <p style={{color: 'red'}}>{error}</p>}
       </div>
