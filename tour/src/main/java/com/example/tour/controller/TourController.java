@@ -1,10 +1,7 @@
 package com.example.tour.controller;
 
 import com.example.common.security.UserPrincipal;
-import com.example.tour.dto.CreateTourDTO;
-import com.example.tour.dto.CreateTourLocationDTO;
-import com.example.tour.dto.CreateTourReviewDTO;
-import com.example.tour.dto.EditTourLocationDTO;
+import com.example.tour.dto.*;
 import com.example.tour.service.TourService;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
@@ -79,5 +76,19 @@ public class TourController {
         UserPrincipal user = (UserPrincipal) Objects.requireNonNull(authentication.getPrincipal());
         var tourReview = tourService.createTourReview(user, tourId, dto);
         return ResponseEntity.ok(tourReview.getId());
+    }
+
+    @GetMapping("/tourist/location")
+    public ResponseEntity<?> getTouristLocation(Authentication authentication) {
+        UserPrincipal user = (UserPrincipal) Objects.requireNonNull(authentication.getPrincipal());
+        var location = tourService.getTouristLocation(user.getId());
+        return ResponseEntity.ok(location);
+    }
+
+    @PutMapping("/tourist/location")
+    public ResponseEntity<?> updateTouristLocation(Authentication authentication, @RequestBody LocationDTO dto) {
+        UserPrincipal user = (UserPrincipal) Objects.requireNonNull(authentication.getPrincipal());
+        tourService.updateTouristLocation(user, dto);
+        return ResponseEntity.ok("Updated");
     }
 }

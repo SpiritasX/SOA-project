@@ -6,10 +6,7 @@ import com.example.common.exception.BadRequestException;
 import com.example.common.model.Role;
 import com.example.common.security.UserPrincipal;
 import com.example.tour.dto.*;
-import com.example.tour.model.Tour;
-import com.example.tour.model.TourLocation;
-import com.example.tour.model.TourReview;
-import com.example.tour.model.User;
+import com.example.tour.model.*;
 import com.example.tour.repository.TourLocationRepository;
 import com.example.tour.repository.TourRepository;
 import com.example.tour.repository.TourReviewRepository;
@@ -17,6 +14,7 @@ import com.example.tour.repository.UserRepository;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
+import java.util.stream.Stream;
 
 @Service
 public class TourService {
@@ -150,5 +148,20 @@ public class TourService {
                 user
         );
         return tourReviewRepository.save(tr);
+    }
+
+    public void updateTouristLocation(UserPrincipal userPrincipal, LocationDTO dto) {
+        if (!Role.TOURIST.equals(userPrincipal.getRole())) {
+            throw new ForbiddenException("You are not a tourist");
+        }
+
+        User user = userRepository.findById(userPrincipal.getId()).orElseThrow(() -> new NotFoundException("User not found"));
+        user.setCurrentLocation(new Location(dto.getLatitude(), dto.getLongitude()));
+        userRepository.save(user);
+    }
+
+    public LocationDTO getTouristLocation(Long id) {
+        User user = userRepository.findById(id).orElseThrow(() -> new NotFoundException("User not found"));
+        return Stream.of(user.getCurrentLocation()).map(LocationDTO::new).findFirst().orElse(null);
     }
 }

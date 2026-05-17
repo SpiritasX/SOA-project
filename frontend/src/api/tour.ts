@@ -40,3 +40,12 @@ export const createTourReview = async (tourId: number, data: any) =>
     method: "POST",
     body: JSON.stringify(data)
   });
+
+export const getTouristLocation = async () =>
+  apiFetch(`/api/tour/tourist/location`);
+
+export const updateTouristLocation = async (data: { latitude: number; longitude: number }) =>
+  apiFetch(`/api/tour/tourist/location`, {
+    method: "PUT",
+    body: JSON.stringify(data)
+  });
