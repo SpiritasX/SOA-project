@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { useParams } from "react-router-dom";
+import {Link, useParams} from "react-router-dom";
 import { getTour } from "../../api/tour";
 
 
@@ -49,7 +49,7 @@ function View() {
     <div>
       <h1>{tour.name}</h1>
       <p>{tour.description}</p>
-
+      <Link to={`/tour/${tour.id}/edit`}>Edit</Link>
       <hr />
 
       {error && <p style={{ color: "red" }}>{error}</p>}

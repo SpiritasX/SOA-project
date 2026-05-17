@@ -2,12 +2,14 @@ package com.example.tour.service;
 
 import com.example.common.exception.ForbiddenException;
 import com.example.common.exception.NotFoundException;
+import com.example.common.exception.BadRequestException;
 import com.example.common.model.Role;
 import com.example.common.security.UserPrincipal;
-import com.example.tour.dto.CreateTourDTO;
-import com.example.tour.dto.ViewTourDTO;
+import com.example.tour.dto.*;
 import com.example.tour.model.Tour;
+import com.example.tour.model.TourLocation;
 import com.example.tour.model.User;
+import com.example.tour.repository.TourLocationRepository;
 import com.example.tour.repository.TourRepository;
 import com.example.tour.repository.UserRepository;
 import org.springframework.stereotype.Service;
@@ -18,17 +20,19 @@ import java.util.List;
 public class TourService {
     private final TourRepository tourRepository;
     private final UserRepository userRepository;
+    private final TourLocationRepository tourLocationRepository;
 
-    public TourService(TourRepository tourRepository, UserRepository userRepository) {
+    public TourService(TourRepository tourRepository, UserRepository userRepository, TourLocationRepository tourLocationRepository) {
         this.tourRepository = tourRepository;
         this.userRepository = userRepository;
+        this.tourLocationRepository = tourLocationRepository;
     }
 
     public ViewTourDTO getTour(Long id) {
         return tourRepository.findById(id).map(ViewTourDTO::new).orElseThrow(() -> new NotFoundException("Tour not found"));
     }
 
-    public void createTour(UserPrincipal userPrincipal, CreateTourDTO dto) {
+    public Tour createTour(UserPrincipal userPrincipal, CreateTourDTO dto) {
         if (!Role.GUIDE.equals(userPrincipal.getRole())) {
             throw new ForbiddenException("You are not a guide");
         }
@@ -37,7 +41,7 @@ public class TourService {
 
         Tour tour = new Tour(dto.getName(), dto.getDescription(), user);
 
-        tourRepository.save(tour);
+        return tourRepository.save(tour);
     }
 
     public List<ViewTourDTO> getToursByAuthorId(UserPrincipal userPrincipal) {
@@ -46,5 +50,77 @@ public class TourService {
         }
 
         return tourRepository.findAllByAuthorId(userPrincipal.getId()).stream().map(ViewTourDTO::new).toList();
+    }
+
+    public TourLocation addTourLocation(UserPrincipal user, Long tourId, CreateTourLocationDTO dto) {
+        if (user.getRole() != Role.GUIDE) {
+            throw new ForbiddenException("You are not a guide");
+        }
+
+        Tour tour = tourRepository.findById(tourId).orElseThrow(() -> new NotFoundException("Tour not found"));
+
+        TourLocation tl = new TourLocation(
+                dto.getName(),
+                dto.getDescription(),
+                dto.getImagePath(),
+                dto.getLatitude(),
+                dto.getLongitude()
+        );
+
+        tour.addLocation(tl);
+
+        tourRepository.save(tour);
+
+        return tour.getLocations().get(tour.getLocations().size() - 1);
+    }
+
+    public TourLocation editTourLocation(UserPrincipal user, Long tourId, EditTourLocationDTO dto) {
+        if (user.getRole() != Role.GUIDE) {
+            throw new ForbiddenException("You are not a guide");
+        }
+
+        Tour tour = tourRepository.findById(tourId).orElseThrow(() -> new NotFoundException("Tour not found"));
+
+        TourLocation tl = tourLocationRepository.findById(dto.getId()).orElseThrow(() -> new NotFoundException("Tour location not found"));
+
+        if (!tour.getLocations().contains(tl)) {
+            throw new BadRequestException("Tour location not part of the tour");
+        }
+
+        if (dto.getName() != null) {
+            tl.setName(dto.getName());
+        }
+
+        if (dto.getDescription() != null) {
+            tl.setDescription(dto.getDescription());
+        }
+
+        if (dto.getImagePath() != null) {
+            tl.setImagePath(dto.getImagePath());
+        }
+
+        return tourLocationRepository.save(tl);
+    }
+
+    public void deleteTourLocation(UserPrincipal user, Long tourId, Long locId) {
+        if (user.getRole() != Role.GUIDE) {
+            throw new ForbiddenException("You are not a guide");
+        }
+
+        Tour tour = tourRepository.findById(tourId).orElseThrow(() -> new NotFoundException("Tour not found"));
+        TourLocation tl = tourLocationRepository.findById(locId).orElseThrow(() -> new NotFoundException("Tour location not found"));
+
+        if (!tour.getLocations().contains(tl)) {
+            throw new BadRequestException("Tour location not part of the tour");
+        }
+
+        tour.removeLocation(tl);
+        tourRepository.save(tour);
+        tourLocationRepository.delete(tl);
+    }
+
+    public List<ViewTourLocationDTO> getTourLocationsByTourId(Long tourId) {
+        Tour tour = tourRepository.findById(tourId).orElseThrow(() -> new NotFoundException("Tour not found"));
+        return tour.getLocations().stream().map(ViewTourLocationDTO::new).toList();
     }
 }

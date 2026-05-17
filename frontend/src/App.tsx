@@ -8,6 +8,7 @@ import User from "./pages/User";
 import CreateBlog from "./pages/blog/Create";
 import ViewBlog from "./pages/blog/View";
 import CreateTour from "./pages/tour/Create";
+import EditTour from "./pages/tour/Edit";
 import ViewTour from "./pages/tour/View";
 import Admin from "./pages/Admin.tsx";
 import RequireRole from "./components/RequireRole.tsx";
@@ -58,6 +59,11 @@ function App() {
           <Route path="/tour/create" element={
             <RequireRole roles={["GUIDE"]}>
               <CreateTour />
+            </RequireRole>
+          } />
+          <Route path="/tour/:id/edit" element={
+            <RequireRole roles={["GUIDE"]}>
+              <EditTour />
             </RequireRole>
           } />
           <Route path="/tour/:id" element={

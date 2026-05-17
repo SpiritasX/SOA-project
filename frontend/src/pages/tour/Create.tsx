@@ -26,7 +26,9 @@ function Create() {
         return;
       }
 
-      navigate("/profile");
+      const id = await response.json();
+
+      navigate(`/tour/${id}/edit`);
 
     } catch (err) {
       console.error(err);

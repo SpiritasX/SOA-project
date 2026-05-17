@@ -318,7 +318,9 @@ function Profile() {
           <ul>
             {tours.map((tour: Tour) => (
               <li key={tour.id}>
-                <h2>{tour.name}</h2>
+                <Link to={`/tour/${tour.id}`}>
+                  <h2>{tour.name}</h2>
+                </Link>
                 <p>{tour.description}</p>
                 <p>Tags: {tour.tags.join(', ')}</p>
                 <p>Price: {tour.price}</p>
