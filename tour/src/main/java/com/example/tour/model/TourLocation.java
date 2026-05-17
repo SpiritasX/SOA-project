@@ -38,6 +38,10 @@ public class TourLocation {
         this.location = new Location(latitude, longitude);
     }
 
+    public Long getId() {
+        return id;
+    }
+
     public Location getLocation() {
         return location;
     }

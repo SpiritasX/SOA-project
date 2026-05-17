@@ -29,6 +29,32 @@ public class RabbitConfig {
     }
 
     @Bean
+    public Queue blockedQueue() {
+        return new Queue("user.blocked.tour.queue");
+    }
+
+    @Bean
+    public Binding blockedBinding(Queue blockedQueue, TopicExchange exchange) {
+        return BindingBuilder
+                .bind(blockedQueue)
+                .to(exchange)
+                .with("user.blocked");
+    }
+
+    @Bean
+    public Queue unblockedQueue() {
+        return new Queue("user.unblocked.tour.queue");
+    }
+
+    @Bean
+    public Binding unblockedBinding(Queue unblockedQueue, TopicExchange exchange) {
+        return BindingBuilder
+                .bind(unblockedQueue)
+                .to(exchange)
+                .with("user.unblocked");
+    }
+
+    @Bean
     public JacksonJsonMessageConverter messageConverter() {
         return new JacksonJsonMessageConverter();
     }

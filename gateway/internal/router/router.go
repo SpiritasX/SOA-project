@@ -21,6 +21,7 @@ func New(cfg config.Config) http.Handler {
 	userProxy := proxy.New(cfg.Services["stakeholders"])
 	adminProxy := proxy.New(cfg.Services["stakeholders"])
 	followersProxy := proxy.New(cfg.Services["followers"])
+	tourProxy := proxy.New(cfg.Services["tour"])
 
 	httpClient := &http.Client{
 		Timeout: 5 * time.Second,
@@ -38,6 +39,7 @@ func New(cfg config.Config) http.Handler {
 	commentGuard := middleware.CommentGuard(blogClient, followersClient)
 
 	publicMux.HandleFunc("/api/auth/", authProxy)
+	publicMux.HandleFunc("/api/auth", authProxy)
 
 	authMw := middleware.NewAuthMiddleware(cfg.JWTSecret)
 	requireAdmin := middleware.RequireRole("ADMINISTRATOR")
@@ -50,6 +52,9 @@ func New(cfg config.Config) http.Handler {
 
 	protectedMux.Handle("/api/followers/", authMw.Middleware(followersProxy))
 	protectedMux.Handle("/api/followers", authMw.Middleware(followersProxy))
+
+	protectedMux.Handle("/api/tour/", authMw.Middleware(tourProxy))
+	protectedMux.Handle("/api/tour", authMw.Middleware(tourProxy))
 
 	protectedMux.Handle("/api/gateway/recommendations", authMw.Middleware(http.HandlerFunc(gatewayHandler.GetRecommendations)))
 	protectedMux.Handle("/api/gateway/feed", authMw.Middleware(http.HandlerFunc(gatewayHandler.GetFeed)))

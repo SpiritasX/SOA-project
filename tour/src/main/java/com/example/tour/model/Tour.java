@@ -33,6 +33,7 @@ public class Tour {
         this.status = TourStatus.DRAFT;
         this.tags = new HashSet<>();
         this.locations = new ArrayList<>();
+        this.difficulty = TourDifficulty.EASY;
     }
 
     public Tour(String name, String description, User author) {
@@ -106,6 +107,10 @@ public class Tour {
 
     public void setStatus(TourStatus status) {
         this.status = status;
+    }
+
+    public User getAuthor() {
+        return author;
     }
 
     public List<TourLocation> getLocations() {

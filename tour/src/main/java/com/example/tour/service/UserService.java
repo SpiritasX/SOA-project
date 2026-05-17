@@ -16,21 +16,21 @@ public class UserService {
         this.userRepository = userRepository;
     }
 
-    @RabbitListener(queues = "user.blocked.blog.queue")
+    @RabbitListener(queues = "user.blocked.tour.queue")
     public void handleUserBlockedEvent(Long userId) {
         User user = userRepository.findById(userId).orElseThrow(() -> new NotFoundException("User not found"));
         user.block();
         userRepository.save(user);
     }
 
-    @RabbitListener(queues = "user.unblocked.blog.queue")
+    @RabbitListener(queues = "user.unblocked.tour.queue")
     public void handleUserUnblockedEvent(Long userId) {
         User user = userRepository.findById(userId).orElseThrow(() -> new NotFoundException("User not found"));
         user.unblock();
         userRepository.save(user);
     }
 
-    @RabbitListener(queues = "user.registered.blog.queue")
+    @RabbitListener(queues = "user.registered.tour.queue")
     public void handleUserRegistered(UserRegisteredEvent event) {
         User user = new User(
                 event.getId(),

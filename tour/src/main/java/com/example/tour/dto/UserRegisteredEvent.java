@@ -1,7 +1,6 @@
 package com.example.tour.dto;
 
 import com.example.common.model.Role;
-import com.example.common.model.Status;
 
 public class UserRegisteredEvent {
     private Long id;
