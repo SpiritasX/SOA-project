@@ -24,6 +24,12 @@ public class TourController {
         return ResponseEntity.ok(tourService.getTour(id));
     }
 
+    @GetMapping("/me")
+    public ResponseEntity<?> getMyTours(Authentication authentication) {
+        UserPrincipal user = (UserPrincipal) Objects.requireNonNull(authentication.getPrincipal());
+        return ResponseEntity.ok(tourService.getToursByAuthorId(user));
+    }
+
     @PostMapping
     public ResponseEntity<?> createTour(Authentication authentication, @RequestBody CreateTourDTO dto) {
         UserPrincipal user = (UserPrincipal) Objects.requireNonNull(authentication.getPrincipal());

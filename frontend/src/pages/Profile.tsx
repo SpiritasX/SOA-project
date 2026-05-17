@@ -1,5 +1,6 @@
 import {useEffect, useState} from "react";
 import { getMyBlogs } from "../api/blog.ts";
+import { getMyTours } from "../api/tour.ts";
 import { getMe, updateUser, getRecommendations } from "../api/user.ts";
 import { Link } from "react-router-dom";
 
@@ -21,7 +22,7 @@ type Comment = {
   updatedAt: string;
 }
 
-type BlogPost = {
+type Blog = {
   id: string;
   title: string;
   description: string;
@@ -30,8 +31,21 @@ type BlogPost = {
   likes: string;
 }
 
+type Tour = {
+  id: number;
+  name: string;
+  description: string;
+  tags: string[];
+  price: number;
+  difficulty: string;
+  status: string;
+  // authorId: number;
+  firstTourLocationId: number;
+}
+
 function Profile() {
-  const [blogs, setBlogs] = useState<BlogPost[]>([]);
+  const [blogs, setBlogs] = useState<Blog[]>([]);
+  const [tours, setTours] = useState<Tour[]>([]);
   const [recommendations, setRecommendations] = useState<User[]>([]);
   const [user, setUser] = useState<User | null>(null);
   const [editing, setEditing] = useState(false);
@@ -84,6 +98,20 @@ function Profile() {
     }
   }
 
+  const fetchTours = async () => {
+    try {
+      const response = await getMyTours();
+      if (!response.ok) {
+        setError(await response.text());
+        return;
+      }
+      const data = await response.json();
+      setTours(data);
+    } catch (error) {
+      console.error('Error fetching tours:', error);
+    }
+  }
+
   const fetchRecommendations = async () => {
     try {
       const response = await getRecommendations();
@@ -117,9 +145,17 @@ function Profile() {
 
   useEffect(() => {
     fetchUser();
+  }, []);
+
+  useEffect(() => {
+    if (!user) return;
+
+    if (user.role === 'GUIDE')
+      fetchTours();
+
     fetchBlogs();
     fetchRecommendations();
-  }, []);
+  }, [user]);
 
   return (
     <div>
@@ -257,7 +293,7 @@ function Profile() {
       <div style={{ marginTop: "30px" }}>
         <h2>My Blogs</h2>
         <ul>
-          {blogs.map((blog: BlogPost) => (
+          {blogs.map((blog: Blog) => (
             <li key={blog.id}>
               <Link to={`/blog/${blog.id}`}>
                 <h2>{blog.title}</h2>
@@ -276,6 +312,23 @@ function Profile() {
           ))}
         </ul>
       </div>
+      { user && user.role === 'GUIDE' && (
+        <div style={{ marginTop: "30px" }}>
+          <h2>My Tours</h2>
+          <ul>
+            {tours.map((tour: Tour) => (
+              <li key={tour.id}>
+                <h2>{tour.name}</h2>
+                <p>{tour.description}</p>
+                <p>Tags: {tour.tags.join(', ')}</p>
+                <p>Price: {tour.price}</p>
+                <p>Difficulty: {tour.difficulty}</p>
+                <p>Status: {tour.status}</p>
+              </li>
+            ))}
+          </ul>
+        </div>
+      )}
       <div>
         {error && <p style={{color: 'red'}}>{error}</p>}
       </div>

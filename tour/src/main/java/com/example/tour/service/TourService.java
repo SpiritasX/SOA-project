@@ -12,6 +12,8 @@ import com.example.tour.repository.TourRepository;
 import com.example.tour.repository.UserRepository;
 import org.springframework.stereotype.Service;
 
+import java.util.List;
+
 @Service
 public class TourService {
     private final TourRepository tourRepository;
@@ -36,5 +38,13 @@ public class TourService {
         Tour tour = new Tour(dto.getName(), dto.getDescription(), user);
 
         tourRepository.save(tour);
+    }
+
+    public List<ViewTourDTO> getToursByAuthorId(UserPrincipal userPrincipal) {
+        if (userPrincipal.getRole() != Role.GUIDE) {
+            throw new ForbiddenException("You are not a guide");
+        }
+
+        return tourRepository.findAllByAuthorId(userPrincipal.getId()).stream().map(ViewTourDTO::new).toList();
     }
 }

@@ -8,3 +8,6 @@ export const createTour = async (data: any) =>
     method: "POST",
     body: JSON.stringify(data)
   });
+
+export const getMyTours = async () =>
+  apiFetch(`/api/tour/me`);

@@ -2,13 +2,18 @@ import { useEffect, useState } from "react";
 import { useParams } from "react-router-dom";
 import { getTour } from "../../api/tour";
 
+
+
 type Tour = {
-  id: string;
+  id: number;
   name: string;
   description: string;
-  createdAt: string;
-  comments: Comment[];
-  likes: number;
+  tags: string[];
+  price: number;
+  difficulty: string;
+  status: string;
+  authorId: number;
+  firstTourLocationId: number;
 };
 
 function View() {
