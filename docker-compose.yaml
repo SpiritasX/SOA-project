@@ -49,6 +49,17 @@ services:
     networks:
       - soa-net
 
+  tour:
+    build:
+      context: ./tour
+    environment:
+      JWT_SECRET: my-super-long-secret-key-that-is-at-least-64-characters-long-123456
+    depends_on:
+      - tour-db
+      - rabbitmq
+    networks:
+      - soa-net
+
   followers:
     build:
       context: ./followers
@@ -96,6 +107,17 @@ services:
     networks:
       - soa-net
 
+  tour-db:
+    image: postgres:17
+    environment:
+      POSTGRES_DB: tour-db
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+    volumes:
+      - tour_postgres_data:/var/lib/postgresql/data
+    networks:
+      - soa-net
+
   followers-db:
     image: neo4j:5
     environment:
@@ -138,6 +160,7 @@ volumes:
   auth_postgres_data:
   stakeholders_postgres_data:
   blog_postgres_data:
+  tour_postgres_data:
   neo4j_data:
   rabbitmq_data:
 

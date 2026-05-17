@@ -9,8 +9,10 @@ from app.services.user_projection_service import UserProjectionService
 class RabbitConsumer:
     def __init__(self):
         def connect():
-            for i in range(10):
+            i = 1
+            while True:
                 try:
+                    print(f"Attempting connection #{i}")
                     return pika.BlockingConnection(
                         pika.ConnectionParameters(
                             host="rabbitmq",
@@ -19,6 +21,7 @@ class RabbitConsumer:
                         )
                     )
                 except Exception:
+                    i = i + 1
                     time.sleep(5)
 
             raise Exception("RabbitMQ not available")

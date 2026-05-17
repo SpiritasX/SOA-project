@@ -20,6 +20,7 @@
         <module>auth</module>
         <module>stakeholders</module>
         <module>blog</module>
+        <module>tour</module>
         <module>common</module>
     </modules>
 </project>
