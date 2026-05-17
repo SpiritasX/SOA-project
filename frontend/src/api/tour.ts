@@ -31,3 +31,12 @@ export const deleteTourLocation = async (tourId: number, locationId: number) =>
 
 export const getMyTours = async () =>
   apiFetch(`/api/tour/me`);
+
+export const getTourReviews = async (tourId: number) =>
+  apiFetch(`/api/tour/${tourId}/reviews`);
+
+export const createTourReview = async (tourId: number, data: any) =>
+  apiFetch(`/api/tour/${tourId}/reviews`, {
+    method: "POST",
+    body: JSON.stringify(data)
+  });

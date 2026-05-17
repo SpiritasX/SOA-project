@@ -8,9 +8,11 @@ import com.example.common.security.UserPrincipal;
 import com.example.tour.dto.*;
 import com.example.tour.model.Tour;
 import com.example.tour.model.TourLocation;
+import com.example.tour.model.TourReview;
 import com.example.tour.model.User;
 import com.example.tour.repository.TourLocationRepository;
 import com.example.tour.repository.TourRepository;
+import com.example.tour.repository.TourReviewRepository;
 import com.example.tour.repository.UserRepository;
 import org.springframework.stereotype.Service;
 
@@ -21,11 +23,13 @@ public class TourService {
     private final TourRepository tourRepository;
     private final UserRepository userRepository;
     private final TourLocationRepository tourLocationRepository;
+    private final TourReviewRepository tourReviewRepository;
 
-    public TourService(TourRepository tourRepository, UserRepository userRepository, TourLocationRepository tourLocationRepository) {
+    public TourService(TourRepository tourRepository, UserRepository userRepository, TourLocationRepository tourLocationRepository, TourReviewRepository tourReviewRepository) {
         this.tourRepository = tourRepository;
         this.userRepository = userRepository;
         this.tourLocationRepository = tourLocationRepository;
+        this.tourReviewRepository = tourReviewRepository;
     }
 
     public ViewTourDTO getTour(Long id) {
@@ -122,5 +126,29 @@ public class TourService {
     public List<ViewTourLocationDTO> getTourLocationsByTourId(Long tourId) {
         Tour tour = tourRepository.findById(tourId).orElseThrow(() -> new NotFoundException("Tour not found"));
         return tour.getLocations().stream().map(ViewTourLocationDTO::new).toList();
+    }
+
+    public List<ViewTourReviewDTO> getTourReviews(Long tourId) {
+        tourRepository.findById(tourId).orElseThrow(() -> new NotFoundException("Tour not found"));
+
+        return tourReviewRepository.findAllByTourId(tourId).stream().map(ViewTourReviewDTO::new).toList();
+    }
+
+    public TourReview createTourReview(UserPrincipal userPrincipal, Long tourId, CreateTourReviewDTO dto) {
+        if (!Role.TOURIST.equals(userPrincipal.getRole())) {
+            throw new ForbiddenException("You are not a tourist");
+        }
+
+        Tour tour = tourRepository.findById(tourId).orElseThrow(() -> new NotFoundException("Tour not found"));
+        User user = userRepository.findById(userPrincipal.getId()).orElseThrow(() -> new NotFoundException("User not found"));
+
+        TourReview tr = new TourReview(
+                dto.getRating(),
+                dto.getComment(),
+                dto.getVisitedAt(),
+                tour,
+                user
+        );
+        return tourReviewRepository.save(tr);
     }
 }

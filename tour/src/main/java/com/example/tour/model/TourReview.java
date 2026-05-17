@@ -21,10 +21,10 @@ public class TourReview {
     @Column(nullable = false)
     private Timestamp createdAt;
     private List<String> imagePaths;
-    @ManyToOne(cascade = CascadeType.ALL, fetch = FetchType.EAGER, optional = false)
+    @ManyToOne(fetch = FetchType.EAGER, optional = false)
     private Tour tour;
-    @ManyToOne(cascade = CascadeType.ALL, fetch = FetchType.EAGER, optional = false)
-    private User user;
+    @ManyToOne(fetch = FetchType.EAGER, optional = false)
+    private User author;
 
     public TourReview() {
     }
@@ -36,7 +36,7 @@ public class TourReview {
         this.createdAt = new Timestamp(System.currentTimeMillis());
         this.imagePaths = new ArrayList<>();
         this.tour = tour;
-        this.user = user;
+        this.author = user;
     }
 
     public TourReview(Long rating, String comment, Timestamp visitedAt, Tour tour, User user) {
@@ -47,7 +47,7 @@ public class TourReview {
         this.createdAt = new Timestamp(System.currentTimeMillis());
         this.imagePaths = new ArrayList<>();
         this.tour = tour;
-        this.user = user;
+        this.author = user;
     }
 
     private static void validateRating(Long rating) {
@@ -101,8 +101,8 @@ public class TourReview {
         return tour;
     }
 
-    public User getUser() {
-        return user;
+    public User getAuthor() {
+        return author;
     }
 
     @Override
