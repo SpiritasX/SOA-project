@@ -38,6 +38,13 @@ public class TourController {
         return ResponseEntity.ok(tour.getId());
     }
 
+    @PutMapping("/{id:\\d+}")
+    public ResponseEntity<?> updateTour(Authentication authentication, @PathVariable Long id, @RequestBody CreateTourDTO dto) {
+        UserPrincipal user = (UserPrincipal) Objects.requireNonNull(authentication.getPrincipal());
+        tourService.updateTour(user, id, dto);
+        return ResponseEntity.ok("Updated");
+    }
+
     @GetMapping("/{tourId:\\d+}/locations")
     public ResponseEntity<?> getTourLocations(@PathVariable Long tourId) {
         var locations = tourService.getTourLocationsByTourId(tourId);
@@ -93,7 +100,7 @@ public class TourController {
     }
 
     @PutMapping("/{tourId:\\d+}/addDuration")
-    public ResponseEntity<?> addTourDuration(Authentication authentication, @PathVariable Long tourId, CreateTourDurationDTO dto) {
+    public ResponseEntity<?> addTourDuration(Authentication authentication, @PathVariable Long tourId, @RequestBody CreateTourDurationDTO dto) {
         UserPrincipal user = (UserPrincipal) Objects.requireNonNull(authentication.getPrincipal());
         tourService.addTourDuration(user, tourId, dto);
         return ResponseEntity.ok("Added");
@@ -113,7 +120,7 @@ public class TourController {
         return ResponseEntity.ok("Published");
     }
 
-    @PutMapping("/{toudId:\\d+}/archive")
+    @PutMapping("/{tourId:\\d+}/archive")
     public ResponseEntity<?> archiveTour(Authentication authentication, @PathVariable Long tourId) {
         UserPrincipal user = (UserPrincipal) Objects.requireNonNull(authentication.getPrincipal());
         tourService.archiveTour(user, tourId);

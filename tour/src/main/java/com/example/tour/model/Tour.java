@@ -44,6 +44,7 @@ public class Tour {
         this.locations = new ArrayList<>();
         this.difficulty = TourDifficulty.EASY;
         this.createdAt = new Timestamp(System.currentTimeMillis());
+        this.distance = 0.0;
         this.durations = new ArrayList<>();
     }
 

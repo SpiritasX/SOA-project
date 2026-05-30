@@ -14,6 +14,8 @@ public class ViewTourDTO {
     private String status;
     private Long authorId;
     private Long firstTourLocationId;
+    private Double distance;
+    private List<ViewTourDurationDTO> durations;
 
     public ViewTourDTO() {
     }
@@ -27,6 +29,8 @@ public class ViewTourDTO {
         this.difficulty = tour.getDifficulty().name();
         this.status = tour.getStatus().name();
         this.authorId = tour.getAuthor().getId();
+        this.distance = tour.getDistance();
+        this.durations = tour.getDurations().stream().map(ViewTourDurationDTO::new).toList();
 //        this.firstTourLocationId = tour.getLocations().get(0).getId();
     }
 
@@ -100,5 +104,21 @@ public class ViewTourDTO {
 
     public void setFirstTourLocationId(Long firstTourLocationId) {
         this.firstTourLocationId = firstTourLocationId;
+    }
+
+    public Double getDistance() {
+        return distance;
+    }
+
+    public void setDistance(Double distance) {
+        this.distance = distance;
+    }
+
+    public List<ViewTourDurationDTO> getDurations() {
+        return durations;
+    }
+
+    public void setDurations(List<ViewTourDurationDTO> durations) {
+        this.durations = durations;
     }
 }

@@ -13,6 +13,12 @@ import {
   deleteTourLocation,
   editTourLocation,
   getTourLocations,
+  getTour,
+  updateTour,
+  addTourDuration,
+  removeTourDuration,
+  publishTour,
+  archiveTour,
 } from "../../api/tour.ts";
 
 type TourLocation = {
@@ -27,6 +33,16 @@ function Edit() {
   const { id } = useParams();
 
   const tourId = Number(id);
+
+  const [tour, setTour] = useState<any>(null);
+  const [tourName, setTourName] = useState("");
+  const [tourDescription, setTourDescription] = useState("");
+  const [difficulty, setDifficulty] = useState("EASY");
+  const [tags, setTags] = useState("");
+  const [durations, setDurations] = useState<any[]>([]);
+
+  const [newTransportType, setNewTransportType] = useState("WALKING");
+  const [newDurationMinutes, setNewDurationMinutes] = useState(0);
 
   const [selectedLocation, setSelectedLocation] =
     useState<Pick<TourLocation, "latitude" | "longitude"> | null>(null);
@@ -44,7 +60,7 @@ function Edit() {
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(true);
 
-  const fetchLocations = async () => {
+  const fetchData = async () => {
     if (Number.isNaN(tourId)) {
       setError("Invalid tour id");
       setLoading(false);
@@ -55,25 +71,41 @@ function Edit() {
     setLoading(true);
 
     try {
-      const response = await getTourLocations(tourId);
+      const [tourRes, locRes] = await Promise.all([
+        getTour(tourId),
+        getTourLocations(tourId),
+      ]);
 
-      if (!response.ok) {
-        setError(await response.text());
+      if (!tourRes.ok) {
+        setError(await tourRes.text());
         return;
       }
 
-      const data: TourLocation[] = await response.json();
-      setLocations(data);
+      if (!locRes.ok) {
+        setError(await locRes.text());
+        return;
+      }
+
+      const tourData = await tourRes.json();
+      const locData = await locRes.json();
+
+      setTour(tourData);
+      setTourName(tourData.name);
+      setTourDescription(tourData.description);
+      setDifficulty(tourData.difficulty);
+      setTags(tourData.tags.join(", "));
+      setDurations(tourData.durations);
+      setLocations(locData);
     } catch (err) {
       console.error(err);
-      setError("Failed to load tour locations");
+      setError("Failed to load tour data");
     } finally {
       setLoading(false);
     }
   };
 
   useEffect(() => {
-    fetchLocations();
+    fetchData();
   }, [tourId]);
 
   const resetModal = () => {
@@ -180,6 +212,98 @@ function Edit() {
     }
   };
 
+  const handleUpdateTour = async () => {
+    setError("");
+    try {
+      const response = await updateTour(tourId, {
+        name: tourName,
+        description: tourDescription,
+        difficulty,
+        tags: tags.split(",").map((t) => t.trim()).filter((t) => t !== ""),
+      });
+
+      if (!response.ok) {
+        setError(await response.text());
+        return;
+      }
+
+      alert("Tour updated successfully");
+    } catch (err) {
+      console.error(err);
+      setError("Failed to update tour");
+    }
+  };
+
+  const handleAddDuration = async () => {
+    setError("");
+    try {
+      const response = await addTourDuration(tourId, {
+        transportType: newTransportType,
+        durationMinutes: newDurationMinutes,
+      });
+
+      if (!response.ok) {
+        setError(await response.text());
+        return;
+      }
+
+      // Re-fetch to get updated durations with IDs
+      const tourRes = await getTour(tourId);
+      const tourData = await tourRes.json();
+      setDurations(tourData.durations);
+    } catch (err) {
+      console.error(err);
+      setError("Failed to add duration");
+    }
+  };
+
+  const handleRemoveDuration = async (durationId: number) => {
+    setError("");
+    try {
+      const response = await removeTourDuration(tourId, durationId);
+
+      if (!response.ok) {
+        setError(await response.text());
+        return;
+      }
+
+      setDurations((prev) => prev.filter((d) => d.id !== durationId));
+    } catch (err) {
+      console.error(err);
+      setError("Failed to remove duration");
+    }
+  };
+
+  const handlePublish = async () => {
+    setError("");
+    try {
+      const response = await publishTour(tourId);
+      if (!response.ok) {
+        setError(await response.text());
+        return;
+      }
+      setTour({ ...tour, status: "PUBLISHED" });
+    } catch (err) {
+      console.error(err);
+      setError("Failed to publish tour");
+    }
+  };
+
+  const handleArchive = async () => {
+    setError("");
+    try {
+      const response = await archiveTour(tourId);
+      if (!response.ok) {
+        setError(await response.text());
+        return;
+      }
+      setTour({ ...tour, status: "ARCHIVED" });
+    } catch (err) {
+      console.error(err);
+      setError("Failed to archive tour");
+    }
+  };
+
   const openEditModal = (location: TourLocation) => {
     setEditingLocation(location);
     setSelectedLocation({
@@ -195,10 +319,67 @@ function Edit() {
     <div>
       <h1>Edit Tour</h1>
 
-      {loading && (
-        <p>
-          Loading locations...
-        </p>
+      {loading && <p>Loading...</p>}
+
+      {!loading && tour && (
+        <div
+          style={{
+            marginBottom: "20px",
+            border: "1px solid #ccc",
+            padding: "10px",
+          }}
+        >
+          <h2>Tour Details</h2>
+          <div>
+            <label>Name</label>
+            <input
+              value={tourName}
+              onChange={(e) => setTourName(e.target.value)}
+              style={{ width: "100%" }}
+            />
+          </div>
+          <div style={{ marginTop: "10px" }}>
+            <label>Description</label>
+            <textarea
+              value={tourDescription}
+              onChange={(e) => setTourDescription(e.target.value)}
+              style={{ width: "100%" }}
+            />
+          </div>
+          <div style={{ marginTop: "10px" }}>
+            <label>Difficulty</label>
+            <select
+              value={difficulty}
+              onChange={(e) => setDifficulty(e.target.value)}
+              style={{ width: "100%" }}
+            >
+              <option value="EASY">Easy</option>
+              <option value="MEDIUM">Medium</option>
+              <option value="HARD">Hard</option>
+            </select>
+          </div>
+          <div style={{ marginTop: "10px" }}>
+            <label>Tags (comma separated)</label>
+            <input
+              value={tags}
+              onChange={(e) => setTags(e.target.value)}
+              style={{ width: "100%" }}
+            />
+          </div>
+          <button onClick={handleUpdateTour} style={{ marginTop: "10px" }}>
+            Save Tour Details
+          </button>
+
+          <div style={{ marginTop: "10px" }}>
+            <p>Status: {tour.status}</p>
+            {tour.status === "DRAFT" && (
+              <button onClick={handlePublish}>Publish</button>
+            )}
+            {tour.status === "PUBLISHED" && (
+              <button onClick={handleArchive}>Archive</button>
+            )}
+          </div>
+        </div>
       )}
 
       {error && (
@@ -252,6 +433,56 @@ function Edit() {
           ])}
         />
       </MapContainer>
+
+      {!loading && tour && (
+        <div
+          style={{
+            marginTop: "20px",
+            border: "1px solid #ccc",
+            padding: "10px",
+          }}
+        >
+          <h2>Durations</h2>
+          <ul>
+            {durations.map((d) => (
+              <li key={d.id}>
+                {d.transportType}: {d.durationMinutes} mins
+                <button
+                  onClick={() => handleRemoveDuration(d.id)}
+                  style={{ marginLeft: "10px" }}
+                >
+                  Remove
+                </button>
+              </li>
+            ))}
+          </ul>
+
+          <div
+            style={{
+              marginTop: "10px",
+              borderTop: "1px solid #eee",
+              paddingTop: "10px",
+            }}
+          >
+            <h3>Add Duration</h3>
+            <select
+              value={newTransportType}
+              onChange={(e) => setNewTransportType(e.target.value)}
+            >
+              <option value="WALKING">Walking</option>
+              <option value="BICYCLE">Bicycle</option>
+              <option value="CAR">Car</option>
+            </select>
+            <input
+              type="number"
+              value={newDurationMinutes}
+              onChange={(e) => setNewDurationMinutes(Number(e.target.value))}
+              placeholder="Minutes"
+            />
+            <button onClick={handleAddDuration}>Add</button>
+          </div>
+        </div>
+      )}
 
       {showModal && (
         <div

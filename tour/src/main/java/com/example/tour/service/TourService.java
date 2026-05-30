@@ -57,7 +57,38 @@ public class TourService {
 
         Tour tour = new Tour(dto.getName(), dto.getDescription(), user);
 
+        if (dto.getDifficulty() != null) {
+            tour.setDifficulty(TourDifficulty.valueOf(dto.getDifficulty()));
+        }
+
+        if (dto.getTags() != null) {
+            dto.getTags().forEach(tour::addTag);
+        }
+
         return tourRepository.save(tour);
+    }
+
+    public void updateTour(UserPrincipal user, Long id, CreateTourDTO dto) {
+        Tour tour = checkRoleAndAuthor(user, id);
+
+        if (dto.getName() != null) {
+            tour.setName(dto.getName());
+        }
+
+        if (dto.getDescription() != null) {
+            tour.setDescription(dto.getDescription());
+        }
+
+        if (dto.getDifficulty() != null) {
+            tour.setDifficulty(TourDifficulty.valueOf(dto.getDifficulty()));
+        }
+
+        if (dto.getTags() != null) {
+            tour.getTags().clear();
+            dto.getTags().forEach(tour::addTag);
+        }
+
+        tourRepository.save(tour);
     }
 
     public List<ViewTourDTO> getToursByAuthorId(UserPrincipal user) {

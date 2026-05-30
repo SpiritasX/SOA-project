@@ -4,6 +4,12 @@ import { getTour, getTourReviews } from "../../api/tour";
 
 
 
+type TourDuration = {
+  id: number;
+  transportType: string;
+  durationMinutes: number;
+};
+
 type Tour = {
   id: number;
   name: string;
@@ -14,6 +20,8 @@ type Tour = {
   status: string;
   authorId: number;
   firstTourLocationId: number;
+  distance: number;
+  durations: TourDuration[];
 };
 
 type TourReview = {
@@ -77,6 +85,42 @@ function View() {
     <div>
       <h1>{tour.name}</h1>
       <p>{tour.description}</p>
+      <p>Difficulty: {tour.difficulty}</p>
+      <p>Distance: {tour.distance.toFixed(2)} km</p>
+      <p>Status: {tour.status}</p>
+
+      {tour.tags && tour.tags.length > 0 && (
+        <div style={{ marginBottom: "10px" }}>
+          Tags:{" "}
+          {tour.tags.map((tag) => (
+            <span
+              key={tag}
+              style={{
+                marginRight: "5px",
+                padding: "2px 5px",
+                background: "#eee",
+                borderRadius: "3px",
+              }}
+            >
+              #{tag}
+            </span>
+          ))}
+        </div>
+      )}
+
+      {tour.durations && tour.durations.length > 0 && (
+        <div style={{ marginBottom: "10px" }}>
+          <h3>Durations</h3>
+          <ul>
+            {tour.durations.map((d) => (
+              <li key={d.id}>
+                {d.transportType}: {d.durationMinutes} mins
+              </li>
+            ))}
+          </ul>
+        </div>
+      )}
+
       <Link to={`/tour/${tour.id}/edit`}>Edit</Link>
       <Link to={`/tour/${tour.id}/review`}>Leave Review</Link>
 
