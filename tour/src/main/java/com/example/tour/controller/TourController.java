@@ -20,8 +20,9 @@ public class TourController {
     }
 
     @GetMapping("/{id:\\d+}")
-    public ResponseEntity<?> getTour(@PathVariable Long id) {
-        var tour = tourService.getTour(id);
+    public ResponseEntity<?> getTour(@PathVariable Long id, Authentication authentication) {
+        UserPrincipal user = authentication != null ? (UserPrincipal) authentication.getPrincipal() : null;
+        var tour = tourService.getTour(id, user);
         return ResponseEntity.ok(tour);
     }
 
@@ -47,8 +48,9 @@ public class TourController {
     }
 
     @GetMapping("/{tourId:\\d+}/locations")
-    public ResponseEntity<?> getTourLocations(@PathVariable Long tourId) {
-        var locations = tourService.getTourLocationsByTourId(tourId);
+    public ResponseEntity<?> getTourLocations(@PathVariable Long tourId, Authentication authentication) {
+        UserPrincipal user = authentication != null ? (UserPrincipal) authentication.getPrincipal() : null;
+        var locations = tourService.getTourLocationsByTourId(tourId, user);
         return ResponseEntity.ok(locations);
     }
 
@@ -132,5 +134,11 @@ public class TourController {
     public ResponseEntity<?> getArhivedTours(Authentication authentication) {
         UserPrincipal user = (UserPrincipal) Objects.requireNonNull(authentication.getPrincipal());
         return ResponseEntity.ok(tourService.getTours(user, TourStatus.ARCHIVED));
+    }
+
+    @GetMapping("/published")
+    public ResponseEntity<?> getPublishedTours(Authentication authentication) {
+        UserPrincipal user = authentication != null ? (UserPrincipal) authentication.getPrincipal() : null;
+        return ResponseEntity.ok(tourService.getAllPublishedTours(user));
     }
 }

@@ -76,3 +76,6 @@ export const archiveTour = async (tourId: number) =>
   apiFetch(`/api/tour/${tourId}/archive`, {
     method: "PUT"
   });
+
+export const getPublishedTours = async () =>
+  apiFetch(`/api/tour/published`);

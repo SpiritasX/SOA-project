@@ -31,7 +31,9 @@ public class ViewTourDTO {
         this.authorId = tour.getAuthor().getId();
         this.distance = tour.getDistance();
         this.durations = tour.getDurations().stream().map(ViewTourDurationDTO::new).toList();
-//        this.firstTourLocationId = tour.getLocations().get(0).getId();
+        if (!tour.getLocations().isEmpty()) {
+            this.firstTourLocationId = tour.getLocations().get(0).getId();
+        }
     }
 
     public Long getId() {

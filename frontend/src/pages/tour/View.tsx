@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import {Link, useParams} from "react-router-dom";
-import { getTour, getTourReviews } from "../../api/tour";
+import { getTour, getTourReviews, getTourLocations } from "../../api/tour";
+import { useAuth } from "../../context/AuthContext";
 
 
 
@@ -24,6 +25,14 @@ type Tour = {
   durations: TourDuration[];
 };
 
+type TourLocation = {
+  id: number;
+  name: string;
+  description: string;
+  latitude: number;
+  longitude: number;
+};
+
 type TourReview = {
   id: number;
   rating: number;
@@ -36,9 +45,11 @@ type TourReview = {
 
 function View() {
   const { id } = useParams();
+  const { auth } = useAuth();
 
   const [tour, setTour] = useState<Tour | null>(null);
   const [reviews, setReviews] = useState<TourReview[]>([]);
+  const [locations, setLocations] = useState<TourLocation[]>([]);
 
   const [error, setError] = useState("");
 
@@ -74,12 +85,32 @@ function View() {
     }
   };
 
+  const fetchLocations = async () => {
+    try {
+      const res = await getTourLocations(Number(id));
+
+      if (!res.ok) {
+        setError(await res.text());
+        return;
+      }
+
+      const data = await res.json();
+      setLocations(data);
+    } catch (e) {
+      console.error(e);
+    }
+  };
+
   useEffect(() => {
     fetchTour();
     fetchReviews();
+    fetchLocations();
   }, [id]);
 
   if (!tour) return <div>Loading...</div>;
+
+  const isGuide = auth.role === "GUIDE";
+  const isAuthor = isGuide && auth.userId === String(tour.authorId);
 
   return (
     <div>
@@ -87,7 +118,7 @@ function View() {
       <p>{tour.description}</p>
       <p>Difficulty: {tour.difficulty}</p>
       <p>Distance: {tour.distance.toFixed(2)} km</p>
-      <p>Status: {tour.status}</p>
+      {isGuide && <p>Status: {tour.status}</p>}
 
       {tour.tags && tour.tags.length > 0 && (
         <div style={{ marginBottom: "10px" }}>
@@ -121,8 +152,31 @@ function View() {
         </div>
       )}
 
-      <Link to={`/tour/${tour.id}/edit`}>Edit</Link>
-      <Link to={`/tour/${tour.id}/review`}>Leave Review</Link>
+      <div>
+        <h3>Locations</h3>
+        {locations.length > 0 ? (
+          <ul>
+            {isGuide ? (
+              locations.map((loc) => (
+                <li key={loc.id}>
+                  <strong>{loc.name}</strong>: {loc.description} ({loc.latitude}, {loc.longitude})
+                </li>
+              ))
+            ) : (
+              <li>
+                <strong>{locations[0].name}</strong>: {locations[0].description} ({locations[0].latitude}, {locations[0].longitude})
+                <br />
+                <em>(Tourists only see the first location)</em>
+              </li>
+            )}
+          </ul>
+        ) : (
+          <p>No locations added yet.</p>
+        )}
+      </div>
+
+      {isAuthor && <Link to={`/tour/${tour.id}/edit`}>Edit</Link>}
+      <Link to={`/tour/${tour.id}/review`} style={{ marginLeft: "10px" }}>Leave Review</Link>
 
       <hr />
 

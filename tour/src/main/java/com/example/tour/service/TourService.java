@@ -44,8 +44,18 @@ public class TourService {
         return tour;
     }
 
-    public ViewTourDTO getTour(Long id) {
-        return tourRepository.findById(id).map(ViewTourDTO::new).orElseThrow(() -> new NotFoundException("Tour not found"));
+    public ViewTourDTO getTour(Long id, UserPrincipal user) {
+        Tour tour = tourRepository.findById(id).orElseThrow(() -> new NotFoundException("Tour not found"));
+        if (tour.getStatus() != TourStatus.PUBLISHED) {
+            if (user == null || !Objects.equals(tour.getAuthor().getId(), user.getId())) {
+                throw new ForbiddenException("Tour not published");
+            }
+        }
+        ViewTourDTO dto = new ViewTourDTO(tour);
+        if (user == null || user.getRole() == Role.TOURIST) {
+            dto.setStatus(null);
+        }
+        return dto;
     }
 
     public Tour createTour(UserPrincipal userPrincipal, CreateTourDTO dto) {
@@ -112,9 +122,19 @@ public class TourService {
             throw new ForbiddenException("You are not a guide");
         }
 
-        List<Tour> tours = tourRepository.findAllByAuthorIdAndStatus(user.getId(), status.name());
+        List<Tour> tours = tourRepository.findAllByAuthorIdAndStatus(user.getId(), status);
 
         return tours.stream().map(ViewTourDTO::new).toList();
+    }
+
+    public List<ViewTourDTO> getAllPublishedTours(UserPrincipal user) {
+        return tourRepository.findAllByStatus(TourStatus.PUBLISHED).stream().map(tour -> {
+            ViewTourDTO dto = new ViewTourDTO(tour);
+            if (user == null || user.getRole() == Role.TOURIST) {
+                dto.setStatus(null);
+            }
+            return dto;
+        }).toList();
     }
 
     public TourLocation addTourLocation(UserPrincipal user, Long tourId, CreateTourLocationDTO dto) {
@@ -176,9 +196,14 @@ public class TourService {
         tourLocationRepository.delete(tl);
     }
 
-    public List<ViewTourLocationDTO> getTourLocationsByTourId(Long tourId) {
+    public List<ViewTourLocationDTO> getTourLocationsByTourId(Long tourId, UserPrincipal user) {
         Tour tour = tourRepository.findById(tourId).orElseThrow(() -> new NotFoundException("Tour not found"));
-        return tour.getLocations().stream().map(ViewTourLocationDTO::new).toList();
+        var locations = tour.getLocations();
+        if (user == null || user.getRole() == Role.TOURIST) {
+            if (locations.isEmpty()) return List.of();
+            return List.of(new ViewTourLocationDTO(locations.get(0)));
+        }
+        return locations.stream().map(ViewTourLocationDTO::new).toList();
     }
 
     public List<ViewTourReviewDTO> getTourReviews(Long tourId) {
