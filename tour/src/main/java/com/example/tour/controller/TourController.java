@@ -91,4 +91,32 @@ public class TourController {
         tourService.updateTouristLocation(user, dto);
         return ResponseEntity.ok("Updated");
     }
+
+    @PutMapping("/{tourId:\\d+}/addDuration")
+    public ResponseEntity<?> addTourDuration(Authentication authentication, @PathVariable Long tourId, CreateTourDurationDTO dto) {
+        UserPrincipal user = (UserPrincipal) Objects.requireNonNull(authentication.getPrincipal());
+        tourService.addTourDuration(user, tourId, dto);
+        return ResponseEntity.ok("Added");
+    }
+
+    @DeleteMapping("/{tourId:\\d+}/removeDuration/{durationId:\\d+}")
+    public ResponseEntity<?> removeTourDuration(Authentication authentication, @PathVariable Long tourId, @PathVariable Long durationId) {
+        UserPrincipal user = (UserPrincipal) Objects.requireNonNull(authentication.getPrincipal());
+        tourService.removeTourDuration(user, tourId, durationId);
+        return ResponseEntity.ok("Removed");
+    }
+
+    @PutMapping("/{tourId:\\d+}/publish")
+    public ResponseEntity<?> publishTour(Authentication authentication, @PathVariable Long tourId) {
+        UserPrincipal user = (UserPrincipal) Objects.requireNonNull(authentication.getPrincipal());
+        tourService.publishTour(user, tourId);
+        return ResponseEntity.ok("Published");
+    }
+
+    @PutMapping("/{toudId:\\d+}/archive")
+    public ResponseEntity<?> archiveTour(Authentication authentication, @PathVariable Long tourId) {
+        UserPrincipal user = (UserPrincipal) Objects.requireNonNull(authentication.getPrincipal());
+        tourService.archiveTour(user, tourId);
+        return ResponseEntity.ok("Archived");
+    }
 }
