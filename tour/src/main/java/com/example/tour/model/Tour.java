@@ -127,6 +127,9 @@ public class Tour {
 
     public void publish() {
         if (this.status != TourStatus.PUBLISHED) {
+            if (this.status == TourStatus.ARCHIVED) {
+                this.archivedAt = null;
+            }
             this.publishedAt = new Timestamp(System.currentTimeMillis());
             this.status = TourStatus.PUBLISHED;
         }

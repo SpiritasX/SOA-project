@@ -2,6 +2,7 @@ package com.example.tour.controller;
 
 import com.example.common.security.UserPrincipal;
 import com.example.tour.dto.*;
+import com.example.tour.model.TourStatus;
 import com.example.tour.service.TourService;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
@@ -27,7 +28,7 @@ public class TourController {
     @GetMapping("/me")
     public ResponseEntity<?> getMyTours(Authentication authentication) {
         UserPrincipal user = (UserPrincipal) Objects.requireNonNull(authentication.getPrincipal());
-        var tours = tourService.getToursByAuthorId(user);
+        var tours = tourService.getTours(user);
         return ResponseEntity.ok(tours);
     }
 
@@ -125,5 +126,11 @@ public class TourController {
         UserPrincipal user = (UserPrincipal) Objects.requireNonNull(authentication.getPrincipal());
         tourService.archiveTour(user, tourId);
         return ResponseEntity.ok("Archived");
+    }
+
+    @GetMapping("/archived")
+    public ResponseEntity<?> getArhivedTours(Authentication authentication) {
+        UserPrincipal user = (UserPrincipal) Objects.requireNonNull(authentication.getPrincipal());
+        return ResponseEntity.ok(tourService.getTours(user, TourStatus.ARCHIVED));
     }
 }

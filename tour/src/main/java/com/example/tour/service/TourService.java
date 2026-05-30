@@ -65,6 +65,10 @@ public class TourService {
             dto.getTags().forEach(tour::addTag);
         }
 
+        if (dto.getPrice() != null) {
+            tour.setPrice(dto.getPrice());
+        }
+
         return tourRepository.save(tour);
     }
 
@@ -88,15 +92,29 @@ public class TourService {
             dto.getTags().forEach(tour::addTag);
         }
 
+        if (dto.getPrice() != null) {
+            tour.setPrice(dto.getPrice());
+        }
+
         tourRepository.save(tour);
     }
 
-    public List<ViewTourDTO> getToursByAuthorId(UserPrincipal user) {
+    public List<ViewTourDTO> getTours(UserPrincipal user) {
         if (user.getRole() != Role.GUIDE) {
             throw new ForbiddenException("You are not a guide");
         }
 
         return tourRepository.findAllByAuthorId(user.getId()).stream().map(ViewTourDTO::new).toList();
+    }
+
+    public List<ViewTourDTO> getTours(UserPrincipal user, TourStatus status) {
+        if (user.getRole() != Role.GUIDE) {
+            throw new ForbiddenException("You are not a guide");
+        }
+
+        List<Tour> tours = tourRepository.findAllByAuthorIdAndStatus(user.getId(), status.name());
+
+        return tours.stream().map(ViewTourDTO::new).toList();
     }
 
     public TourLocation addTourLocation(UserPrincipal user, Long tourId, CreateTourLocationDTO dto) {

@@ -7,15 +7,17 @@ public class CreateTourDTO {
     private String description;
     private String difficulty;
     private List<String> tags;
+    private Double price;
 
     public CreateTourDTO() {
     }
 
-    public CreateTourDTO(String name, String description, String difficulty, List<String> tags) {
+    public CreateTourDTO(String name, String description, String difficulty, List<String> tags, Double price) {
         this.name = name;
         this.description = description;
         this.difficulty = difficulty;
         this.tags = tags;
+        this.price = price;
     }
 
     public String getName() {
@@ -48,5 +50,13 @@ public class CreateTourDTO {
 
     public void setTags(List<String> tags) {
         this.tags = tags;
+    }
+
+    public Double getPrice() {
+        return price;
+    }
+
+    public void setPrice(Double price) {
+        this.price = price;
     }
 }

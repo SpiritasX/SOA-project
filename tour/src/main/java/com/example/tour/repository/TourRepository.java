@@ -9,4 +9,5 @@ import java.util.List;
 @Repository
 public interface TourRepository extends JpaRepository<Tour, Long> {
     List<Tour> findAllByAuthorId(Long id);
+    List<Tour> findAllByAuthorIdAndStatus(Long id, String status);
 }

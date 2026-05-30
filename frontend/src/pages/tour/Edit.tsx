@@ -39,6 +39,7 @@ function Edit() {
   const [tourDescription, setTourDescription] = useState("");
   const [difficulty, setDifficulty] = useState("EASY");
   const [tags, setTags] = useState("");
+  const [price, setPrice] = useState(0);
   const [durations, setDurations] = useState<any[]>([]);
 
   const [newTransportType, setNewTransportType] = useState("WALKING");
@@ -94,6 +95,7 @@ function Edit() {
       setTourDescription(tourData.description);
       setDifficulty(tourData.difficulty);
       setTags(tourData.tags.join(", "));
+      setPrice(tourData.price);
       setDurations(tourData.durations);
       setLocations(locData);
     } catch (err) {
@@ -220,14 +222,13 @@ function Edit() {
         description: tourDescription,
         difficulty,
         tags: tags.split(",").map((t) => t.trim()).filter((t) => t !== ""),
+        price,
       });
 
       if (!response.ok) {
         setError(await response.text());
         return;
       }
-
-      alert("Tour updated successfully");
     } catch (err) {
       console.error(err);
       setError("Failed to update tour");
@@ -366,13 +367,22 @@ function Edit() {
               style={{ width: "100%" }}
             />
           </div>
+          <div style={{ marginTop: "10px" }}>
+            <label>Price</label>
+            <input
+              value={price}
+              type="number"
+              onChange={(e) => setPrice(Number(e.target.value))}
+              style={{ width: "100%" }}
+            />
+          </div>
           <button onClick={handleUpdateTour} style={{ marginTop: "10px" }}>
             Save Tour Details
           </button>
 
           <div style={{ marginTop: "10px" }}>
             <p>Status: {tour.status}</p>
-            {tour.status === "DRAFT" && (
+            {tour.status != "PUBLISHED" && (
               <button onClick={handlePublish}>Publish</button>
             )}
             {tour.status === "PUBLISHED" && (

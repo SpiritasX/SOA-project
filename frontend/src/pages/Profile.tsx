@@ -312,22 +312,57 @@ function Profile() {
           ))}
         </ul>
       </div>
-      { user && user.role === 'GUIDE' && (
-        <div style={{ marginTop: "30px" }}>
-          <h2>My Tours</h2>
+      {user && user.role === 'GUIDE' && (
+        <div style={{ marginTop: '30px' }}>
+          <h2>Draft Tours</h2>
           <ul>
-            {tours.map((tour: Tour) => (
-              <li key={tour.id}>
-                <Link to={`/tour/${tour.id}`}>
-                  <h2>{tour.name}</h2>
-                </Link>
-                <p>{tour.description}</p>
-                <p>Tags: {tour.tags.join(', ')}</p>
-                <p>Price: {tour.price}</p>
-                <p>Difficulty: {tour.difficulty}</p>
-                <p>Status: {tour.status}</p>
-              </li>
-            ))}
+            {tours
+              .filter((tour: Tour) => tour.status === 'DRAFT')
+              .map((tour: Tour) => (
+                <li key={tour.id}>
+                  <Link to={`/tour/${tour.id}`}>
+                    <h3>{tour.name}</h3>
+                  </Link>
+                  <p>{tour.description}</p>
+                  <p>Tags: {tour.tags.join(', ')}</p>
+                  <p>Price: {tour.price}</p>
+                  <p>Difficulty: {tour.difficulty}</p>
+                </li>
+              ))}
+          </ul>
+
+          <h2>Published Tours</h2>
+          <ul>
+            {tours
+              .filter((tour: Tour) => tour.status === 'PUBLISHED')
+              .map((tour: Tour) => (
+                <li key={tour.id}>
+                  <Link to={`/tour/${tour.id}`}>
+                    <h3>{tour.name}</h3>
+                  </Link>
+                  <p>{tour.description}</p>
+                  <p>Tags: {tour.tags.join(', ')}</p>
+                  <p>Price: {tour.price}</p>
+                  <p>Difficulty: {tour.difficulty}</p>
+                </li>
+              ))}
+          </ul>
+
+          <h2>Archived Tours</h2>
+          <ul>
+            {tours
+              .filter((tour: Tour) => tour.status === 'ARCHIVED')
+              .map((tour: Tour) => (
+                <li key={tour.id}>
+                  <Link to={`/tour/${tour.id}`}>
+                    <h3>{tour.name}</h3>
+                  </Link>
+                  <p>{tour.description}</p>
+                  <p>Tags: {tour.tags.join(', ')}</p>
+                  <p>Price: {tour.price}</p>
+                  <p>Difficulty: {tour.difficulty}</p>
+                </li>
+              ))}
           </ul>
         </div>
       )}

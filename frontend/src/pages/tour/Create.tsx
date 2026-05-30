@@ -7,6 +7,7 @@ function Create() {
   const [description, setDescription] = useState("");
   const [difficulty, setDifficulty] = useState("EASY");
   const [tags, setTags] = useState("");
+  const [price, setPrice] = useState(0);
 
   const [error, setError] = useState("");
 
@@ -23,6 +24,7 @@ function Create() {
         description,
         difficulty,
         tags: tags.split(",").map((t) => t.trim()).filter((t) => t !== ""),
+        price,
       });
 
       if (!response.ok) {
@@ -86,6 +88,16 @@ function Create() {
             type="text"
             value={tags}
             onChange={(e) => setTags(e.target.value)}
+          />
+        </div>
+
+        <div style={{ marginBottom: "10px" }}>
+          <label>Price</label>
+          <br />
+          <input
+            type="number"
+            value={price}
+            onChange={(e) => setPrice(Number(e.target.value))}
           />
         </div>
 
