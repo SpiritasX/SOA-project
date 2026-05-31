@@ -10,6 +10,7 @@ public class ViewOrderDTO {
     private Double price;
     private List<Long> tourIds;
     private Long userId;
+    private String status;
 
     public ViewOrderDTO() {
     }
@@ -19,6 +20,7 @@ public class ViewOrderDTO {
         this.price = order.getTotalPrice();
         this.tourIds = order.getTours().stream().map(Tour::getId).toList();
         this.userId = order.getUser().getId();
+        this.status = order.getStatus().name();
     }
 
     public Long getId() {
@@ -51,5 +53,13 @@ public class ViewOrderDTO {
 
     public void setUserId(Long userId) {
         this.userId = userId;
+    }
+
+    public String getStatus() {
+        return status;
+    }
+
+    public void setStatus(String status) {
+        this.status = status;
     }
 }

@@ -21,6 +21,24 @@ public class RabbitConfig {
     }
 
     @Bean
+    public TopicExchange orderExchange() {
+        return new TopicExchange("order.exchange");
+    }
+
+    @Bean
+    public Queue validatedQueue() {
+        return new Queue("order.validated.purchase.queue");
+    }
+
+    @Bean
+    public Binding validatedBinding(Queue validatedQueue, TopicExchange orderExchange) {
+        return BindingBuilder
+                .bind(validatedQueue)
+                .to(orderExchange)
+                .with("order.validated");
+    }
+
+    @Bean
     public Queue registeredQueue() {
         return new Queue("user.registered.purchase.queue");
     }

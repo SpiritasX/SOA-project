@@ -57,6 +57,9 @@ func (s *PurchaseService) GetTourLocations(userID string, role string, tourID in
 
 	isPurchased := false
 	for _, order := range orders {
+		if order.Status != "COMPLETED" {
+			continue
+		}
 		for _, id := range order.TourIds {
 			if id == tourID {
 				isPurchased = true
@@ -79,6 +82,9 @@ func (s *PurchaseService) StartTour(userID string, role string, tourID int) (*dt
 
 	isPurchased := false
 	for _, order := range orders {
+		if order.Status != "COMPLETED" {
+			continue
+		}
 		for _, id := range order.TourIds {
 			if id == tourID {
 				isPurchased = true

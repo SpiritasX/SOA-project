@@ -16,6 +16,24 @@ public class RabbitConfig {
     }
 
     @Bean
+    public TopicExchange orderExchange() {
+        return new TopicExchange("order.exchange");
+    }
+
+    @Bean
+    public Queue orderCreatedQueue() {
+        return new Queue("order.created.tour.queue");
+    }
+
+    @Bean
+    public Binding orderCreatedBinding(Queue orderCreatedQueue, TopicExchange orderExchange) {
+        return BindingBuilder
+                .bind(orderCreatedQueue)
+                .to(orderExchange)
+                .with("order.created");
+    }
+
+    @Bean
     public Queue registeredQueue() {
         return new Queue("user.registered.tour.queue");
     }

@@ -345,6 +345,7 @@ function Profile() {
               {purchases.map((order: any) => (
                 <li key={order.id} style={{ marginBottom: "20px", borderBottom: "1px solid #eee", paddingBottom: "10px" }}>
                   <p><strong>Order ID:</strong> {order.id}</p>
+                  <p><strong>Status:</strong> <span style={{ color: order.status === 'COMPLETED' ? 'green' : (order.status === 'PENDING' ? 'orange' : 'red') }}>{order.status}</span></p>
                   <p><strong>Total Price:</strong> ${order.totalPrice}</p>
                   <ul>
                     {order.tours.map((tour: any) => (

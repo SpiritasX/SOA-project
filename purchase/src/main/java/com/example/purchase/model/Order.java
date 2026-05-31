@@ -19,6 +19,9 @@ public class Order {
     private List<Tour> tours;
     @Column(nullable = false)
     private Double totalPrice;
+    @Enumerated(EnumType.STRING)
+    @Column(nullable = false)
+    private OrderStatus status;
     @ManyToOne(fetch = FetchType.LAZY)
     private User user;
 
@@ -29,6 +32,7 @@ public class Order {
         this.tours = tours;
         this.totalPrice = tours.stream().mapToDouble(Tour::getPrice).sum();
         this.user = user;
+        this.status = OrderStatus.PENDING;
     }
 
     public Long getId() {
@@ -41,6 +45,14 @@ public class Order {
 
     public Double getTotalPrice() {
         return totalPrice;
+    }
+
+    public OrderStatus getStatus() {
+        return status;
+    }
+
+    public void setStatus(OrderStatus status) {
+        this.status = status;
     }
 
     public User getUser() {

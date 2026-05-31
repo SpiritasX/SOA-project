@@ -5,6 +5,7 @@ type OrderDTO struct {
 	Price   float64 `json:"price"`
 	TourIds []int   `json:"tourIds"`
 	UserID  int     `json:"userId"`
+	Status  string  `json:"status"`
 }
 
 type AggregatedOrderDTO struct {
