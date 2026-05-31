@@ -48,9 +48,9 @@ public class TourController {
     }
 
     @GetMapping("/{tourId:\\d+}/locations")
-    public ResponseEntity<?> getTourLocations(@PathVariable Long tourId, Authentication authentication) {
+    public ResponseEntity<?> getTourLocations(@PathVariable Long tourId, @RequestParam(defaultValue = "false") boolean isPurchased, Authentication authentication) {
         UserPrincipal user = authentication != null ? (UserPrincipal) authentication.getPrincipal() : null;
-        var locations = tourService.getTourLocationsByTourId(tourId, user);
+        var locations = tourService.getTourLocationsByTourId(tourId, user, isPurchased);
         return ResponseEntity.ok(locations);
     }
 

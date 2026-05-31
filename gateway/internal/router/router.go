@@ -31,11 +31,14 @@ func New(cfg config.Config) http.Handler {
 	followersClient := client.NewFollowersClient(cfg.Services["followers"], httpClient)
 	usersClient := client.NewUsersClient(cfg.Services["stakeholders"], httpClient)
 	blogClient := client.NewBlogClient(cfg.Services["blog"], httpClient)
+	tourClient := client.NewTourClient(cfg.Services["tour"], httpClient)
+	purchaseClient := client.NewPurchaseClient(cfg.Services["purchase"], httpClient)
 
 	recommendationService := aggregate.NewRecommendationService(followersClient, usersClient)
 	feedService := aggregate.NewFeedService(followersClient, blogClient)
+	purchaseService := aggregate.NewPurchaseService(purchaseClient, tourClient)
 
-	gatewayHandler := handler.NewGatewayHandler(recommendationService, feedService)
+	gatewayHandler := handler.NewGatewayHandler(recommendationService, feedService, purchaseService)
 
 	commentGuard := middleware.CommentGuard(blogClient, followersClient)
 
@@ -62,6 +65,8 @@ func New(cfg config.Config) http.Handler {
 
 	protectedMux.Handle("/api/gateway/recommendations", authMw.Middleware(http.HandlerFunc(gatewayHandler.GetRecommendations)))
 	protectedMux.Handle("/api/gateway/feed", authMw.Middleware(http.HandlerFunc(gatewayHandler.GetFeed)))
+	protectedMux.Handle("/api/gateway/purchases", authMw.Middleware(http.HandlerFunc(gatewayHandler.GetPurchases)))
+	protectedMux.Handle("/api/gateway/tour/{id}/locations", authMw.Middleware(http.HandlerFunc(gatewayHandler.GetTourLocations)))
 
 	protectedMux.Handle("/api/admin/", authMw.Middleware(requireAdmin(adminProxy)))
 	protectedMux.Handle("/api/admin", authMw.Middleware(requireAdmin(adminProxy)))

@@ -16,7 +16,7 @@ export const updateTour = async (id: number, data: any) =>
   });
 
 export const getTourLocations = async (tourId: number) =>
-  apiFetch(`/api/tour/${tourId}/locations`);
+  apiFetch(`/api/gateway/tour/${tourId}/locations`);
 
 export const createTourLocation = async (tourId: number, data: any) =>
   apiFetch(`/api/tour/${tourId}/locations`, {

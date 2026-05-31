@@ -87,7 +87,7 @@ public class TourService {
         rabbitTemplate.convertAndSend(
                 "tour.exchange",
                 "tour.created",
-                new TourCreatedEvent(tour.getId(), tour.getName())
+                new TourCreatedEvent(tour.getId(), tour.getName(), tour.getPrice())
         );
 
         return tour;
@@ -213,10 +213,10 @@ public class TourService {
         tourLocationRepository.delete(tl);
     }
 
-    public List<ViewTourLocationDTO> getTourLocationsByTourId(Long tourId, UserPrincipal user) {
+    public List<ViewTourLocationDTO> getTourLocationsByTourId(Long tourId, UserPrincipal user, boolean isPurchased) {
         Tour tour = tourRepository.findById(tourId).orElseThrow(() -> new NotFoundException("Tour not found"));
         var locations = tour.getLocations();
-        if (user == null || user.getRole() == Role.TOURIST) {
+        if ((user == null || user.getRole() == Role.TOURIST) && !isPurchased) {
             if (locations.isEmpty()) return List.of();
             return List.of(new ViewTourLocationDTO(locations.get(0)));
         }

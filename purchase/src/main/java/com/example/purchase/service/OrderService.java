@@ -1,9 +1,11 @@
 package com.example.purchase.service;
 
+import com.example.common.exception.BadRequestException;
 import com.example.common.exception.NotFoundException;
 import com.example.purchase.dto.ViewOrderDTO;
 import com.example.purchase.model.Order;
 import com.example.purchase.model.Tour;
+import com.example.purchase.model.TourStatus;
 import com.example.purchase.model.User;
 import com.example.purchase.repository.OrderRepository;
 import com.example.purchase.repository.TourRepository;
@@ -36,6 +38,10 @@ public class OrderService {
 
         if (tours.size() != tourIds.size()) {
             throw new NotFoundException("Tour not found");
+        }
+
+        if (tours.stream().anyMatch(t -> t.getStatus() == TourStatus.ARCHIVED)) {
+            throw new BadRequestException("Archived tours cannot be purchased");
         }
 
         Order order = new Order(tours, user);
