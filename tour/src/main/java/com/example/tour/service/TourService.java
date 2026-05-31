@@ -8,6 +8,7 @@ import com.example.common.security.UserPrincipal;
 import com.example.tour.dto.*;
 import com.example.tour.model.*;
 import com.example.tour.repository.*;
+import org.springframework.amqp.rabbit.core.RabbitTemplate;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -21,13 +22,15 @@ public class TourService {
     private final TourLocationRepository tourLocationRepository;
     private final TourReviewRepository tourReviewRepository;
     private final TourDurationRepository tourDurationRepository;
+    private final RabbitTemplate rabbitTemplate;
 
-    public TourService(TourRepository tourRepository, UserRepository userRepository, TourLocationRepository tourLocationRepository, TourReviewRepository tourReviewRepository, TourDurationRepository tourDurationRepository) {
+    public TourService(TourRepository tourRepository, UserRepository userRepository, TourLocationRepository tourLocationRepository, TourReviewRepository tourReviewRepository, TourDurationRepository tourDurationRepository, RabbitTemplate rabbitTemplate) {
         this.tourRepository = tourRepository;
         this.userRepository = userRepository;
         this.tourLocationRepository = tourLocationRepository;
         this.tourReviewRepository = tourReviewRepository;
         this.tourDurationRepository = tourDurationRepository;
+        this.rabbitTemplate = rabbitTemplate;
     }
 
     private Tour checkRoleAndAuthor(UserPrincipal user, Long tourId) {
@@ -79,7 +82,15 @@ public class TourService {
             tour.setPrice(dto.getPrice());
         }
 
-        return tourRepository.save(tour);
+        tour = tourRepository.save(tour);
+
+        rabbitTemplate.convertAndSend(
+                "tour.exchange",
+                "tour.created",
+                new TourCreatedEvent(tour.getId(), tour.getName())
+        );
+
+        return tour;
     }
 
     public void updateTour(UserPrincipal user, Long id, CreateTourDTO dto) {
@@ -107,6 +118,12 @@ public class TourService {
         }
 
         tourRepository.save(tour);
+
+        rabbitTemplate.convertAndSend(
+                "tour.exchange",
+                "tour.updated",
+                new TourUpdatedEvent(tour.getId(), tour.getName(), tour.getPrice())
+        );
     }
 
     public List<ViewTourDTO> getTours(UserPrincipal user) {
@@ -258,6 +275,12 @@ public class TourService {
 
         tour.publish();
         tourRepository.save(tour);
+
+        rabbitTemplate.convertAndSend(
+                "tour.exchange",
+                "tour.published",
+                tour.getId()
+        );
     }
 
     public void addTourDuration(UserPrincipal user, Long tourId, CreateTourDurationDTO dto) {
@@ -291,5 +314,11 @@ public class TourService {
 
         tour.archive();
         tourRepository.save(tour);
+
+        rabbitTemplate.convertAndSend(
+                "tour.exchange",
+                "tour.archived",
+                tour.getId()
+        );
     }
 }

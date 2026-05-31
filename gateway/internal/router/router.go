@@ -22,9 +22,10 @@ func New(cfg config.Config) http.Handler {
 	adminProxy := proxy.New(cfg.Services["stakeholders"])
 	followersProxy := proxy.New(cfg.Services["followers"])
 	tourProxy := proxy.New(cfg.Services["tour"])
+	purchaseProxy := proxy.New(cfg.Services["purchase"])
 
 	httpClient := &http.Client{
-		Timeout: 5 * time.Second,
+		Timeout: 30 * time.Second,
 	}
 
 	followersClient := client.NewFollowersClient(cfg.Services["followers"], httpClient)
@@ -55,6 +56,9 @@ func New(cfg config.Config) http.Handler {
 
 	protectedMux.Handle("/api/tour/", authMw.Middleware(tourProxy))
 	protectedMux.Handle("/api/tour", authMw.Middleware(tourProxy))
+
+	protectedMux.Handle("/api/purchase/", authMw.Middleware(purchaseProxy))
+	protectedMux.Handle("/api/purchase", authMw.Middleware(purchaseProxy))
 
 	protectedMux.Handle("/api/gateway/recommendations", authMw.Middleware(http.HandlerFunc(gatewayHandler.GetRecommendations)))
 	protectedMux.Handle("/api/gateway/feed", authMw.Middleware(http.HandlerFunc(gatewayHandler.GetFeed)))

@@ -1,6 +1,7 @@
 import {useEffect, useState} from "react";
 import { getMyBlogs } from "../api/blog.ts";
 import { getMyTours } from "../api/tour.ts";
+import { getMyPurchases } from "../api/purchase.ts";
 import { getMe, updateUser, getRecommendations } from "../api/user.ts";
 import { Link } from "react-router-dom";
 
@@ -46,6 +47,7 @@ type Tour = {
 function Profile() {
   const [blogs, setBlogs] = useState<Blog[]>([]);
   const [tours, setTours] = useState<Tour[]>([]);
+  const [purchases, setPurchases] = useState<any[]>([]);
   const [recommendations, setRecommendations] = useState<User[]>([]);
   const [user, setUser] = useState<User | null>(null);
   const [editing, setEditing] = useState(false);
@@ -112,6 +114,18 @@ function Profile() {
     }
   }
 
+  const fetchPurchases = async () => {
+    try {
+      const response = await getMyPurchases();
+      if (response.ok) {
+        const data = await response.json();
+        setPurchases(data);
+      }
+    } catch (e) {
+      console.error(e);
+    }
+  };
+
   const fetchRecommendations = async () => {
     try {
       const response = await getRecommendations();
@@ -152,6 +166,9 @@ function Profile() {
 
     if (user.role === 'GUIDE')
       fetchTours();
+
+    if (user.role === 'TOURIST')
+      fetchPurchases();
 
     fetchBlogs();
     fetchRecommendations();
@@ -312,6 +329,32 @@ function Profile() {
           ))}
         </ul>
       </div>
+      {user && user.role === 'TOURIST' && (
+        <div style={{ marginTop: '30px' }}>
+          <h2>Purchased Tours</h2>
+          {purchases.length === 0 ? (
+            <p>You haven't purchased any tours yet.</p>
+          ) : (
+            <ul>
+              {purchases.map((order: any) => (
+                <li key={order.id} style={{ marginBottom: "20px", borderBottom: "1px solid #eee", paddingBottom: "10px" }}>
+                  <p><strong>Order ID:</strong> {order.id}</p>
+                  <p><strong>Total Price:</strong> ${order.totalPrice}</p>
+                  <ul>
+                    {order.tours.map((tour: any) => (
+                      <li key={tour.id}>
+                        <Link to={`/tour/${tour.id}`}>
+                          {tour.name} - ${tour.price}
+                        </Link>
+                      </li>
+                    ))}
+                  </ul>
+                </li>
+              ))}
+            </ul>
+          )}
+        </div>
+      )}
       {user && user.role === 'GUIDE' && (
         <div style={{ marginTop: '30px' }}>
           <h2>Draft Tours</h2>

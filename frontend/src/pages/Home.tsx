@@ -3,6 +3,9 @@ import { Link } from "react-router-dom";
 import { getFeed } from "../api/blog";
 import { getUser } from "../api/user";
 import { getPublishedTours } from "../api/tour";
+import { getMyPurchases } from "../api/purchase";
+import { useCart } from "../context/CartContext";
+import { useAuth } from "../context/AuthContext";
 
 type Comment = {
   id: string;
@@ -24,8 +27,11 @@ type BlogPost = {
 };
 
 function Home() {
+  const { addToCart } = useCart();
+  const { auth } = useAuth();
   const [blogs, setBlogs] = useState<BlogPost[]>([]);
   const [tours, setTours] = useState<any[]>([]);
+  const [purchasedTourIds, setPurchasedTourIds] = useState<number[]>([]);
   const [error, setError] = useState("");
 
   const fetchBlogs = async () => {
@@ -74,10 +80,24 @@ function Home() {
     }
   };
 
+  const fetchPurchases = async () => {
+    if (auth.role === "TOURIST") {
+      const res = await getMyPurchases();
+      if (!res.ok) return [];
+      const purchases = await res.json();
+      const tourIds = new Set<number>();
+      purchases.forEach((p: any) => {
+        p.tours.forEach((t: any) => tourIds.add(t.id));
+      });
+      setPurchasedTourIds(Array.from(tourIds));
+    }
+  };
+
   useEffect(() => {
     fetchBlogs();
     fetchTours();
-  }, []);
+    fetchPurchases();
+  }, [auth]);
 
   return (
     <div style={{ display: "flex", gap: "20px" }}>
@@ -120,6 +140,27 @@ function Home() {
               <p>Difficulty: {tour.difficulty}</p>
               <p>Distance: {tour.distance.toFixed(2)} km</p>
               <p>Price: ${tour.price}</p>
+              
+              {auth.role === "TOURIST" && (
+                purchasedTourIds.includes(tour.id) ? (
+                  <p style={{ color: "green", fontWeight: "bold" }}>Purchased</p>
+                ) : (
+                  <button
+                    onClick={() => addToCart({ id: tour.id, name: tour.name, price: tour.price })}
+                    style={{
+                      marginBottom: "10px",
+                      padding: "5px 10px",
+                      backgroundColor: "#28a745",
+                      color: "white",
+                      border: "none",
+                      borderRadius: "3px",
+                      cursor: "pointer",
+                    }}
+                  >
+                    Add to Cart
+                  </button>
+                )
+              )}
               
               {tour.tags && tour.tags.length > 0 && (
                 <div style={{ marginBottom: "10px" }}>

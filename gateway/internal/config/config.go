@@ -17,6 +17,7 @@ func Load() Config {
 			"blog":        "http://blog:8080",
 			"followers":   "http://followers:8080",
 			"tour":		   "http://tour:8080",
+			"purchase":    "http://purchase:8080",
 		},
 	}
 }

@@ -22,5 +22,6 @@
         <module>blog</module>
         <module>tour</module>
         <module>common</module>
+        <module>purchase</module>
     </modules>
 </project>

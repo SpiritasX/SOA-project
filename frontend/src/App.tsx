@@ -12,6 +12,7 @@ import EditTour from "./pages/tour/Edit";
 import ViewTour from "./pages/tour/View";
 import ReviewTour from "./pages/tour/Review";
 import Simulator from "./pages/tour/Simulator";
+import ShoppingCart from "./pages/tour/ShoppingCart";
 import Admin from "./pages/Admin.tsx";
 import RequireRole from "./components/RequireRole.tsx";
 
@@ -29,6 +30,7 @@ function App() {
         <Link to="/blog/create" style={{ margin: '0 10px' }}>Create Blog</Link>
         <Link to="/tour/create" style={{ margin: '0 10px' }}>Create Tour</Link>
         <Link to="/simulator" style={{ margin: '0 10px' }}>Simulator</Link>
+        <Link to="/cart" style={{ margin: '0 10px' }}>Cart</Link>
         <button onClick={logout} style={{ margin: '0 10px' }}>Logout</button>
       </nav>
 
@@ -80,6 +82,11 @@ function App() {
           <Route path="/simulator" element={
             <RequireRole roles={["TOURIST"]}>
               <Simulator />
+            </RequireRole>
+          } />
+          <Route path="/cart" element={
+            <RequireRole roles={["TOURIST"]}>
+              <ShoppingCart />
             </RequireRole>
           } />
           <Route path="/admin" element={
