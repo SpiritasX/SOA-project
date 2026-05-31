@@ -6,6 +6,8 @@ import {
   likeBlog,
   editComment,
 } from "../../api/blog";
+import ReactMarkdown from "react-markdown";
+import remarkGfm from "remark-gfm";
 
 type Comment = {
   id: string;
@@ -104,7 +106,11 @@ function View() {
   return (
     <div>
       <h1>{blog.title}</h1>
-      <p>{blog.description}</p>
+      <div>
+        <ReactMarkdown remarkPlugins={[remarkGfm]}>
+          {blog.description}
+        </ReactMarkdown>
+      </div>
 
       <p>Likes: {blog.likes}</p>
       <button onClick={handleLike}>Like</button>

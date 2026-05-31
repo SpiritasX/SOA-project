@@ -4,6 +4,8 @@ import { getMyTours } from "../api/tour.ts";
 import { getMyPurchases } from "../api/purchase.ts";
 import { getMe, updateUser, getRecommendations } from "../api/user.ts";
 import { Link } from "react-router-dom";
+import ReactMarkdown from "react-markdown";
+import remarkGfm from "remark-gfm";
 
 type User = {
   id: string;
@@ -315,7 +317,11 @@ function Profile() {
               <Link to={`/blog/${blog.id}`}>
                 <h2>{blog.title}</h2>
               </Link>
-              <p>{blog.description}</p>
+              <div>
+                <ReactMarkdown remarkPlugins={[remarkGfm]}>
+                  {blog.description}
+                </ReactMarkdown>
+              </div>
               <p>Created At: {new Date(blog.createdAt).toLocaleString()}</p>
               <ul>
                 {blog.comments.map((comment: Comment) => (
