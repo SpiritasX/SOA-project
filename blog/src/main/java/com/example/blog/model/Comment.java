@@ -1,47 +1,25 @@
 package com.example.blog.model;
 
-import jakarta.persistence.*;
+import java.util.Date;
 
-import java.sql.Timestamp;
-import java.util.Objects;
-
-@Entity(name = "comments")
 public class Comment {
-    @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long id;
-    @ManyToOne(fetch = FetchType.EAGER, optional = false)
-    private User author;
-    @ManyToOne(fetch = FetchType.LAZY)
-    private Blog blog;
-    @Column(nullable = false)
+    private Long authorId;
     private String content;
-    @Column(nullable = false)
-    private Timestamp createdAt;
-    @Column(nullable = false)
-    private Timestamp updatedAt;
+    private Date createdAt;
+    private Date updatedAt;
 
     public Comment() {
     }
 
-    public Comment(User author, Blog blog, String content) {
-        this.author = author;
-        this.blog = blog;
+    public Comment(Long authorId, String content) {
+        this.authorId = authorId;
         this.content = content;
-        this.createdAt = new Timestamp(System.currentTimeMillis());
+        this.createdAt = new Date(System.currentTimeMillis());
         this.updatedAt = this.createdAt;
     }
 
-    public Long getId() {
-        return id;
-    }
-
-    public User getAuthor() {
-        return author;
-    }
-
-    public Blog getBlog() {
-        return blog;
+    public Long getAuthorId() {
+        return authorId;
     }
 
     public String getContent() {
@@ -50,25 +28,14 @@ public class Comment {
 
     public void setContent(String content) {
         this.content = content;
-        this.updatedAt = new Timestamp(System.currentTimeMillis());
+        this.updatedAt = new Date(System.currentTimeMillis());
     }
 
-    public Timestamp getCreatedAt() {
+    public Date getCreatedAt() {
         return createdAt;
     }
 
-    public Timestamp getUpdatedAt() {
+    public Date getUpdatedAt() {
         return updatedAt;
-    }
-
-    @Override
-    public boolean equals(Object o) {
-        if (!(o instanceof Comment comment)) return false;
-        return Objects.equals(id, comment.id);
-    }
-
-    @Override
-    public int hashCode() {
-        return Objects.hashCode(id);
     }
 }

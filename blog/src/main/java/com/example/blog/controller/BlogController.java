@@ -19,8 +19,8 @@ public class BlogController {
         this.blogService = blogService;
     }
 
-    @GetMapping("/{blogId:\\d+}")
-    public ResponseEntity<?> getBlog(@PathVariable Long blogId) {
+    @GetMapping("/{blogId}")
+    public ResponseEntity<?> getBlog(@PathVariable String blogId) {
         return ResponseEntity.ok(blogService.getBlog(blogId));
     }
 
@@ -46,21 +46,21 @@ public class BlogController {
     // TODO add image to blog
 
     @PostMapping("/{blogId}/comment")
-    public ResponseEntity<?> comment(Authentication authentication, @PathVariable Long blogId, @RequestBody String content) {
+    public ResponseEntity<?> comment(Authentication authentication, @PathVariable String blogId, @RequestBody String content) {
         UserPrincipal user = (UserPrincipal) Objects.requireNonNull(authentication.getPrincipal());
         blogService.comment(blogId, content, user.getId());
         return ResponseEntity.ok().build();
     }
 
-    @PatchMapping("/comment/{commentId}/edit")
-    public ResponseEntity<?> editComment(Authentication authentication, @PathVariable Long commentId, @RequestBody String content) {
+    @PatchMapping("/{blogId}/comment/{commentIndex}/edit")
+    public ResponseEntity<?> editComment(Authentication authentication, @PathVariable String blogId, @PathVariable int commentIndex, @RequestBody String content) {
         UserPrincipal user = (UserPrincipal) Objects.requireNonNull(authentication.getPrincipal());
-        blogService.editComment(commentId, content, user.getId());
+        blogService.editComment(blogId, commentIndex, content, user.getId());
         return ResponseEntity.ok().build();
     }
 
     @PostMapping("/{blogId}/like")
-    public ResponseEntity<?> like(Authentication authentication, @PathVariable Long blogId) {
+    public ResponseEntity<?> like(Authentication authentication, @PathVariable String blogId) {
         UserPrincipal user = (UserPrincipal) Objects.requireNonNull(authentication.getPrincipal());
         blogService.toggleLikeBlog(blogId, user.getId());
         return ResponseEntity.ok().build();

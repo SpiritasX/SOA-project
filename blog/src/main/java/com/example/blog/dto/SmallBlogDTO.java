@@ -1,22 +1,18 @@
 package com.example.blog.dto;
 
 import com.example.blog.model.Blog;
-import com.example.blog.model.Comment;
-import com.example.blog.model.Like;
-import com.example.blog.model.User;
-import jakarta.persistence.*;
 
-import java.sql.Timestamp;
-import java.util.HashSet;
-import java.util.Set;
+import java.util.ArrayList;
+import java.util.Date;
+import java.util.List;
 
 public class SmallBlogDTO {
-    private Long id;
+    private String id;
     private Long authorId;
     private String title;
     private String description;
-    private Timestamp createdAt;
-    private Set<CommentDTO> comments;
+    private Date createdAt;
+    private List<CommentDTO> comments;
     private int likes;
 
     public SmallBlogDTO(Blog blog) {
@@ -25,15 +21,17 @@ public class SmallBlogDTO {
         this.title = blog.getTitle();
         this.description = blog.getDescription();
         this.createdAt = blog.getCreatedAt();
-        this.comments = new HashSet<>(blog.getComments().stream().map(CommentDTO::new).toList());
+        this.comments = new ArrayList<>(blog.getComments().stream().map(CommentDTO::new).toList());
+        for (int i = 0; i < this.comments.size(); i++)
+            this.comments.get(i).setId((long) i);
         this.likes = blog.getLikes().size();
     }
 
-    public Long getId() {
+    public String getId() {
         return id;
     }
 
-    public void setId(Long id) {
+    public void setId(String id) {
         this.id = id;
     }
 
@@ -61,19 +59,19 @@ public class SmallBlogDTO {
         this.description = description;
     }
 
-    public Timestamp getCreatedAt() {
+    public Date getCreatedAt() {
         return createdAt;
     }
 
-    public void setCreatedAt(Timestamp createdAt) {
+    public void setCreatedAt(Date createdAt) {
         this.createdAt = createdAt;
     }
 
-    public Set<CommentDTO> getComments() {
+    public List<CommentDTO> getComments() {
         return comments;
     }
 
-    public void setComments(Set<CommentDTO> comments) {
+    public void setComments(List<CommentDTO> comments) {
         this.comments = comments;
     }
 

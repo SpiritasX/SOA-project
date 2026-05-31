@@ -109,13 +109,9 @@ services:
       - soa-net
 
   blog-db:
-    image: postgres:17
-    environment:
-      POSTGRES_DB: blog-db
-      POSTGRES_USER: postgres
-      POSTGRES_PASSWORD: postgres
+    image: mongo:8
     volumes:
-      - blog_postgres_data:/var/lib/postgresql/data
+      - blog_mongo_data:/data/db
     networks:
       - soa-net
 
@@ -162,7 +158,6 @@ services:
       - "8090:80"
     depends_on:
       - auth-db
-      - blog-db
       - stakeholders-db
       - tour-db
       - purchase-db
@@ -184,7 +179,7 @@ services:
 volumes:
   auth_postgres_data:
   stakeholders_postgres_data:
-  blog_postgres_data:
+  blog_mongo_data:
   tour_postgres_data:
   purchase_postgres_data:
   neo4j_data:

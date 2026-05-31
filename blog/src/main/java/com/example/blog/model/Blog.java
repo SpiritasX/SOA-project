@@ -1,29 +1,21 @@
 package com.example.blog.model;
 
-import jakarta.persistence.*;
+import org.springframework.data.annotation.Id;
+import org.springframework.data.mongodb.core.mapping.Document;
 
-import java.sql.Timestamp;
 import java.util.*;
 
-@Entity(name = "blogs")
+@Document(collection = "blogs")
 public class Blog {
     @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long id;
-    @ManyToOne(fetch = FetchType.EAGER, optional = false)
+    private String id;
     private User author;
-    @Column(nullable = false)
     private String title;
-    @Column
     private String description;
-    @Column(nullable = false)
-    private Timestamp createdAt;
-    @Column
+    private Date createdAt;
     private List<String> imagePaths;
-    @OneToMany(mappedBy = "blog", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.EAGER)
-    private Set<Comment> comments;
-    @OneToMany(mappedBy = "blog", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.EAGER)
-    private Set<Like> likes;
+    private List<Comment> comments;
+    private Set<Long> likes;
 
     public Blog() {
     }
@@ -32,13 +24,13 @@ public class Blog {
         this.author = author;
         this.title = title;
         this.description = description;
-        this.createdAt = new Timestamp(System.currentTimeMillis());
+        this.createdAt = new Date(System.currentTimeMillis());
         this.imagePaths = new ArrayList<>();
-        this.comments = new HashSet<>();
+        this.comments = new ArrayList<>();
         this.likes = new HashSet<>();
     }
 
-    public Long getId() {
+    public String getId() {
         return id;
     }
 
@@ -62,7 +54,7 @@ public class Blog {
         this.description = description;
     }
 
-    public Timestamp getCreatedAt() {
+    public Date getCreatedAt() {
         return createdAt;
     }
 
@@ -75,7 +67,7 @@ public class Blog {
         this.imagePaths = imagePaths;
     }
 
-    public Set<Comment> getComments() {
+    public List<Comment> getComments() {
         return comments;
     }
 
@@ -83,16 +75,16 @@ public class Blog {
         this.comments.add(comment);
     }
 
-    public Set<Like> getLikes() {
+    public Set<Long> getLikes() {
         return likes;
     }
 
-    public boolean like(Like like) {
-        return this.likes.add(like);
+    public boolean like(Long userId) {
+        return this.likes.add(userId);
     }
 
-    public boolean unlike(Like like) {
-        return this.likes.remove(like);
+    public boolean unlike(Long userId) {
+        return this.likes.remove(userId);
     }
 
     @Override

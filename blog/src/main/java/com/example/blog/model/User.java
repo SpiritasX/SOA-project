@@ -2,19 +2,16 @@ package com.example.blog.model;
 
 import com.example.common.model.Role;
 import com.example.common.model.Status;
-import jakarta.persistence.*;
+import org.springframework.data.annotation.Id;
+import org.springframework.data.mongodb.core.mapping.Document;
 
 import java.util.Objects;
 
-@Entity(name = "users")
+@Document(collection = "users")
 public class User {
     @Id
     private Long id;
-    @Column(nullable = false)
-    @Enumerated(EnumType.STRING)
     private Role role;
-    @Column(nullable = false)
-    @Enumerated(EnumType.STRING)
     private Status status;
 
     public User() {

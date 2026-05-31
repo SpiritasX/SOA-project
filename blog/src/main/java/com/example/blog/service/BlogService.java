@@ -7,32 +7,24 @@ import com.example.common.exception.ForbiddenException;
 import com.example.common.exception.NotFoundException;
 import com.example.blog.model.Blog;
 import com.example.blog.model.Comment;
-import com.example.blog.model.Like;
 import com.example.blog.model.User;
 import com.example.blog.repository.BlogRepository;
-import com.example.blog.repository.CommentRepository;
-import com.example.blog.repository.LikeRepository;
 import com.example.blog.repository.UserRepository;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
-import java.util.Optional;
 
 @Service
 public class BlogService {
     private final BlogRepository blogRepository;
-    private final CommentRepository commentRepository;
-    private final LikeRepository likeRepository;
     private final UserRepository userRepository;
 
-    public BlogService(BlogRepository blogRepository, CommentRepository commentRepository, LikeRepository likeRepository, UserRepository userRepository) {
+    public BlogService(BlogRepository blogRepository, UserRepository userRepository) {
         this.blogRepository = blogRepository;
-        this.commentRepository = commentRepository;
-        this.likeRepository = likeRepository;
         this.userRepository = userRepository;
     }
 
-    public SmallBlogDTO getBlog(Long id) {
+    public SmallBlogDTO getBlog(String id) {
         Blog blog = blogRepository.findById(id).orElseThrow(() -> new NotFoundException("Blog not found"));
         return new SmallBlogDTO(blog);
     }
@@ -57,14 +49,13 @@ public class BlogService {
         blogRepository.save(blog);
     }
 
-    public void comment(Long blogId, String content, Long authorId) {
+    public void comment(String blogId, String content, Long authorId) {
         User user = userRepository.findById(authorId).orElseThrow(() -> new NotFoundException("User not found"));
 
         Blog blog = blogRepository.findById(blogId).orElseThrow(() -> new NotFoundException("Blog not found"));
 
         Comment comment = new Comment(
-                user,
-                blog,
+                authorId,
                 content
         );
 
@@ -72,33 +63,32 @@ public class BlogService {
         blogRepository.save(blog);
     }
 
-    public void editComment(Long commentId, String content, Long authorId) {
-        Comment comment = commentRepository.findById(commentId).orElseThrow(() -> new NotFoundException("Comment not found"));
+    public void editComment(String blogId, int commentIndex, String content, Long authorId) {
+        Blog blog = blogRepository.findById(blogId).orElseThrow(() -> new NotFoundException("Blog not found"));
 
-        if (!comment.getAuthor().getId().equals(authorId)) {
+        if (commentIndex < 0 || commentIndex >= blog.getComments().size()) {
+            throw new NotFoundException("Comment not found");
+        }
+
+        Comment comment = blog.getComments().get(commentIndex);
+
+        if (!comment.getAuthorId().equals(authorId)) {
             throw new ForbiddenException("You are not the author of this comment");
         }
 
         comment.setContent(content);
-        commentRepository.save(comment);
+        blogRepository.save(blog);
     }
 
-    public void toggleLikeBlog(Long blogId, Long userId) {
+    public void toggleLikeBlog(String blogId, Long userId) {
         Blog blog = blogRepository.findById(blogId).orElseThrow(() -> new NotFoundException("Blog not found"));
 
-        User user = userRepository.findById(userId).orElseThrow(() -> new NotFoundException("User not found"));
-
-        Optional<Like> like = likeRepository.findByBlogIdAndUserId(blog.getId(), user.getId());
-
-        if (like.isPresent()) {
-            blog.unlike(like.get());
-            likeRepository.delete(like.get());
-            blogRepository.save(blog);
+        if (blog.getLikes().contains(userId)) {
+            blog.unlike(userId);
         } else {
-            // TODO change userId usage to user usage
-            blog.like(new Like(user, blog));
-            blogRepository.save(blog);
+            blog.like(userId);
         }
+        blogRepository.save(blog);
     }
 
     public List<SmallBlogDTO> getBlogsByUserIds(List<Long> userIds) {

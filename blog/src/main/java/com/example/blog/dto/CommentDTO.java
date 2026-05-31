@@ -1,24 +1,18 @@
 package com.example.blog.dto;
 
-import com.example.blog.model.Blog;
 import com.example.blog.model.Comment;
-import com.example.blog.model.User;
-import jakarta.persistence.Column;
-import jakarta.persistence.FetchType;
-import jakarta.persistence.ManyToOne;
 
-import java.sql.Timestamp;
+import java.util.Date;
 
 public class CommentDTO {
     private Long id;
     private Long authorId;
     private String content;
-    private Timestamp createdAt;
-    private Timestamp updatedAt;
+    private Date createdAt;
+    private Date updatedAt;
 
     public CommentDTO(Comment comment) {
-        this.id = comment.getId();
-        this.authorId = comment.getAuthor().getId();
+        this.authorId = comment.getAuthorId();
         this.content = comment.getContent();
         this.createdAt = comment.getCreatedAt();
         this.updatedAt = comment.getUpdatedAt();
@@ -48,19 +42,19 @@ public class CommentDTO {
         this.content = content;
     }
 
-    public Timestamp getCreatedAt() {
+    public Date getCreatedAt() {
         return createdAt;
     }
 
-    public void setCreatedAt(Timestamp createdAt) {
+    public void setCreatedAt(Date createdAt) {
         this.createdAt = createdAt;
     }
 
-    public Timestamp getUpdatedAt() {
+    public Date getUpdatedAt() {
         return updatedAt;
     }
 
-    public void setUpdatedAt(Timestamp updatedAt) {
+    public void setUpdatedAt(Date updatedAt) {
         this.updatedAt = updatedAt;
     }
 }

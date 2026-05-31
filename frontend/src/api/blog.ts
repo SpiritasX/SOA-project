@@ -1,6 +1,6 @@
 import { apiFetch } from "./client";
 
-export const getBlog = (id: number) =>
+export const getBlog = (id: string | undefined) =>
   apiFetch(`/api/blog/${id}`);
 
 export const createBlog = (data: any) =>
@@ -10,21 +10,21 @@ export const createBlog = (data: any) =>
     body: JSON.stringify(data),
   });
 
-export const addComment = (blogId: number, text: string) =>
+export const addComment = (blogId: string | undefined, text: string) =>
   apiFetch(`/api/blog/${blogId}/comment`, {
     method: "POST",
     headers: { "Content-Type": "text/plain" },
     body: text,
   });
 
-export const editComment = (commentId: number, text: string) =>
-  apiFetch(`/api/blog/comment/${commentId}/edit`, {
+export const editComment = (blogId: string | undefined, commentId: number, text: string) =>
+  apiFetch(`/api/blog/${blogId}/comment/${commentId}/edit`, {
     method: "PATCH",
     headers: { "Content-Type": "text/plain" },
     body: text,
   });
 
-export const likeBlog = (blogId: number) =>
+export const likeBlog = (blogId: string | undefined) =>
   apiFetch(`/api/blog/${blogId}/like`, {
     method: "POST",
   });

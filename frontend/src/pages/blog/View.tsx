@@ -11,7 +11,7 @@ import remarkGfm from "remark-gfm";
 
 type Comment = {
   id: string;
-  authorId: string;
+  authorId: number;
   content: string;
   createdAt: string;
   updatedAt: string;
@@ -39,7 +39,7 @@ function View() {
 
   const fetchBlog = async () => {
     try {
-      const res = await getBlog(Number(id));
+      const res = await getBlog(id);
 
       if (!res.ok) {
         setError(await res.text());
@@ -68,14 +68,14 @@ function View() {
   }, [error]);
 
   const handleLike = async () => {
-    await likeBlog(Number(id));
+    await likeBlog(id);
     fetchBlog();
   };
 
   const handleComment = async () => {
     if (!comment.trim()) return;
 
-    const res = await addComment(Number(id), comment);
+    const res = await addComment(id, comment);
 
     if (!res.ok) {
       setError(await res.text());
@@ -89,7 +89,7 @@ function View() {
   const handleEditComment = async (commentId: string) => {
     if (!editText.trim()) return;
 
-    const res = await editComment(Number(commentId), editText);
+    const res = await editComment(id, Number(commentId), editText);
 
     if (!res.ok) {
       setError(await res.text());

@@ -19,7 +19,7 @@ type User = {
 
 type Comment = {
   id: string;
-  authorId: string;
+  authorId: number;
   content: string;
   createdAt: string;
   updatedAt: string;
@@ -31,7 +31,7 @@ type Blog = {
   description: string;
   createdAt: string;
   comments: Comment[];
-  likes: string;
+  likes: number;
 }
 
 type Tour = {
