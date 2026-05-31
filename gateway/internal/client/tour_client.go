@@ -72,3 +72,115 @@ func (c *TourClient) GetTourLocations(userID string, role string, tourID int, is
 
 	return locations, nil
 }
+
+func (c *TourClient) StartTour(userID string, role string, tourID int) (*dto.TourExecutionDTO, error) {
+	req, err := http.NewRequest("POST", fmt.Sprintf("%s/api/executions/start/%d", c.BaseURL, tourID), nil)
+	if err != nil {
+		return nil, err
+	}
+
+	req.Header.Set("X-User-ID", userID)
+	req.Header.Set("X-Role", role)
+
+	resp, err := c.HTTPClient.Do(req)
+	if err != nil {
+		return nil, err
+	}
+	defer resp.Body.Close()
+
+	if resp.StatusCode >= 400 {
+		return nil, fmt.Errorf("tour service returned status %d", resp.StatusCode)
+	}
+
+	var execution dto.TourExecutionDTO
+	if err := json.NewDecoder(resp.Body).Decode(&execution); err != nil {
+		return nil, err
+	}
+
+	return &execution, nil
+}
+
+func (c *TourClient) AbandonTour(userID string, role string, executionID int) (*dto.TourExecutionDTO, error) {
+	req, err := http.NewRequest("POST", fmt.Sprintf("%s/api/executions/%d/abandon", c.BaseURL, executionID), nil)
+	if err != nil {
+		return nil, err
+	}
+
+	req.Header.Set("X-User-ID", userID)
+	req.Header.Set("X-Role", role)
+
+	resp, err := c.HTTPClient.Do(req)
+	if err != nil {
+		return nil, err
+	}
+	defer resp.Body.Close()
+
+	if resp.StatusCode >= 400 {
+		return nil, fmt.Errorf("tour service returned status %d", resp.StatusCode)
+	}
+
+	var execution dto.TourExecutionDTO
+	if err := json.NewDecoder(resp.Body).Decode(&execution); err != nil {
+		return nil, err
+	}
+
+	return &execution, nil
+}
+
+func (c *TourClient) GetActiveExecution(userID string, role string) (*dto.TourExecutionDTO, error) {
+	req, err := http.NewRequest("GET", fmt.Sprintf("%s/api/executions/active", c.BaseURL), nil)
+	if err != nil {
+		return nil, err
+	}
+
+	req.Header.Set("X-User-ID", userID)
+	req.Header.Set("X-Role", role)
+
+	resp, err := c.HTTPClient.Do(req)
+	if err != nil {
+		return nil, err
+	}
+	defer resp.Body.Close()
+
+	if resp.StatusCode == 404 {
+		return nil, nil // No active execution
+	}
+
+	if resp.StatusCode >= 400 {
+		return nil, fmt.Errorf("tour service returned status %d", resp.StatusCode)
+	}
+
+	var execution dto.TourExecutionDTO
+	if err := json.NewDecoder(resp.Body).Decode(&execution); err != nil {
+		return nil, err
+	}
+
+	return &execution, nil
+}
+
+func (c *TourClient) CheckProximity(userID string, role string, executionID int) (*dto.TourExecutionDTO, error) {
+	req, err := http.NewRequest("POST", fmt.Sprintf("%s/api/executions/%d/check-proximity", c.BaseURL, executionID), nil)
+	if err != nil {
+		return nil, err
+	}
+
+	req.Header.Set("X-User-ID", userID)
+	req.Header.Set("X-Role", role)
+
+	resp, err := c.HTTPClient.Do(req)
+	if err != nil {
+		return nil, err
+	}
+	defer resp.Body.Close()
+
+	if resp.StatusCode >= 400 {
+		return nil, fmt.Errorf("tour service returned status %d", resp.StatusCode)
+	}
+
+	var execution dto.TourExecutionDTO
+	if err := json.NewDecoder(resp.Body).Decode(&execution); err != nil {
+		return nil, err
+	}
+
+	return &execution, nil
+}

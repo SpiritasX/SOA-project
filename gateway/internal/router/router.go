@@ -67,6 +67,10 @@ func New(cfg config.Config) http.Handler {
 	protectedMux.Handle("/api/gateway/feed", authMw.Middleware(http.HandlerFunc(gatewayHandler.GetFeed)))
 	protectedMux.Handle("/api/gateway/purchases", authMw.Middleware(http.HandlerFunc(gatewayHandler.GetPurchases)))
 	protectedMux.Handle("/api/gateway/tour/{id}/locations", authMw.Middleware(http.HandlerFunc(gatewayHandler.GetTourLocations)))
+	protectedMux.Handle("/api/gateway/tour/{id}/start", authMw.Middleware(http.HandlerFunc(gatewayHandler.StartTour)))
+	protectedMux.Handle("/api/gateway/executions/{id}/abandon", authMw.Middleware(http.HandlerFunc(gatewayHandler.AbandonTour)))
+	protectedMux.Handle("/api/gateway/executions/active", authMw.Middleware(http.HandlerFunc(gatewayHandler.GetActiveExecution)))
+	protectedMux.Handle("/api/gateway/executions/{id}/check-proximity", authMw.Middleware(http.HandlerFunc(gatewayHandler.CheckProximity)))
 
 	protectedMux.Handle("/api/admin/", authMw.Middleware(requireAdmin(adminProxy)))
 	protectedMux.Handle("/api/admin", authMw.Middleware(requireAdmin(adminProxy)))

@@ -13,6 +13,7 @@ import ViewTour from "./pages/tour/View";
 import ReviewTour from "./pages/tour/Review";
 import Simulator from "./pages/tour/Simulator";
 import ShoppingCart from "./pages/tour/ShoppingCart";
+import ActiveTour from "./pages/tour/ActiveTour";
 import Admin from "./pages/Admin.tsx";
 import RequireRole from "./components/RequireRole.tsx";
 
@@ -87,6 +88,11 @@ function App() {
           <Route path="/cart" element={
             <RequireRole roles={["TOURIST"]}>
               <ShoppingCart />
+            </RequireRole>
+          } />
+          <Route path="/tour/active" element={
+            <RequireRole roles={["TOURIST"]}>
+              <ActiveTour />
             </RequireRole>
           } />
           <Route path="/admin" element={

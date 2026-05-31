@@ -101,3 +101,92 @@ func (h *GatewayHandler) GetTourLocations(w http.ResponseWriter, r *http.Request
 	w.Header().Set("Content-Type", "application/json")
 	json.NewEncoder(w).Encode(locations)
 }
+
+func (h *GatewayHandler) StartTour(w http.ResponseWriter, r *http.Request) {
+	userID := r.Header.Get("X-User-ID")
+	role := r.Header.Get("X-Role")
+	tourIDStr := r.PathValue("id")
+	if tourIDStr == "" {
+		http.Error(w, "missing tour id", http.StatusBadRequest)
+		return
+	}
+
+	var tourID int
+	fmt.Sscanf(tourIDStr, "%d", &tourID)
+
+	execution, err := h.PurchaseService.StartTour(userID, role, tourID)
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusBadGateway)
+		return
+	}
+
+	w.Header().Set("Content-Type", "application/json")
+	json.NewEncoder(w).Encode(execution)
+}
+
+func (h *GatewayHandler) AbandonTour(w http.ResponseWriter, r *http.Request) {
+	userID := r.Header.Get("X-User-ID")
+	role := r.Header.Get("X-Role")
+	executionIDStr := r.PathValue("id")
+	if executionIDStr == "" {
+		http.Error(w, "missing execution id", http.StatusBadRequest)
+		return
+	}
+
+	var executionID int
+	fmt.Sscanf(executionIDStr, "%d", &executionID)
+
+	execution, err := h.PurchaseService.AbandonTour(userID, role, executionID)
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusBadGateway)
+		return
+	}
+
+	w.Header().Set("Content-Type", "application/json")
+	json.NewEncoder(w).Encode(execution)
+}
+
+func (h *GatewayHandler) GetActiveExecution(w http.ResponseWriter, r *http.Request) {
+	userID := r.Header.Get("X-User-ID")
+	role := r.Header.Get("X-Role")
+	if userID == "" {
+		http.Error(w, "unauthorized", http.StatusUnauthorized)
+		return
+	}
+
+	execution, err := h.PurchaseService.GetActiveExecution(userID, role)
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusBadGateway)
+		return
+	}
+
+	if execution == nil {
+		w.WriteHeader(http.StatusNotFound)
+		return
+	}
+
+	w.Header().Set("Content-Type", "application/json")
+	json.NewEncoder(w).Encode(execution)
+}
+
+func (h *GatewayHandler) CheckProximity(w http.ResponseWriter, r *http.Request) {
+	userID := r.Header.Get("X-User-ID")
+	role := r.Header.Get("X-Role")
+	executionIDStr := r.PathValue("id")
+	if executionIDStr == "" {
+		http.Error(w, "missing execution id", http.StatusBadRequest)
+		return
+	}
+
+	var executionID int
+	fmt.Sscanf(executionIDStr, "%d", &executionID)
+
+	execution, err := h.PurchaseService.CheckProximity(userID, role, executionID)
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusBadGateway)
+		return
+	}
+
+	w.Header().Set("Content-Type", "application/json")
+	json.NewEncoder(w).Encode(execution)
+}

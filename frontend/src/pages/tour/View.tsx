@@ -1,11 +1,21 @@
 import { useEffect, useState } from "react";
-import {Link, useParams} from "react-router-dom";
+import { Link, useParams, useNavigate } from "react-router-dom";
 import { getTour, getTourReviews, getTourLocations } from "../../api/tour";
 import { getMyPurchases } from "../../api/purchase";
+import { startTour, getActiveExecution } from "../../api/execution";
 import { useAuth } from "../../context/AuthContext";
 import { useCart } from "../../context/CartContext";
 
-
+type TourExecution = {
+  id: number;
+  userId: number;
+  tourId: number;
+  status: string;
+  startTime: string;
+  endTime?: string;
+  lastActivity: string;
+  completedLocations: Record<number, string>;
+}
 
 type TourDuration = {
   id: number;
@@ -47,6 +57,7 @@ type TourReview = {
 
 function View() {
   const { id } = useParams();
+  const navigate = useNavigate();
   const { auth } = useAuth();
   const { addToCart } = useCart();
 
@@ -54,6 +65,7 @@ function View() {
   const [reviews, setReviews] = useState<TourReview[]>([]);
   const [locations, setLocations] = useState<TourLocation[]>([]);
   const [isPurchased, setIsPurchased] = useState(false);
+  const [activeExecution, setActiveExecution] = useState<any>(null);
 
   const [error, setError] = useState("");
 
@@ -121,11 +133,42 @@ function View() {
     }
   };
 
+  const fetchActiveExecution = async () => {
+    if (auth.role !== "TOURIST") return;
+    try {
+      const execution: TourExecution = await getActiveExecution().then(res => res.ok ? res.json() : null);
+      setActiveExecution(execution);
+    } catch (e) {
+      console.error(e);
+    }
+  };
+
+  const handleStartTour = async () => {
+    if (!id) return;
+    try {
+      if (activeExecution) {
+        if (activeExecution.tourId === Number(id)) {
+          navigate("/tour/active");
+        } else {
+          alert("You already have another active tour. Abandon it first.");
+        }
+        return;
+      }
+
+      await startTour(Number(id));
+      navigate("/tour/active");
+    } catch (e: any) {
+      console.error(e);
+      alert(e.response?.data || "Failed to start tour.");
+    }
+  };
+
   useEffect(() => {
     fetchTour();
     fetchReviews();
     fetchLocations();
     fetchPurchases();
+    fetchActiveExecution();
   }, [id, auth]);
 
   if (!tour) return <div>Loading...</div>;
@@ -197,7 +240,22 @@ function View() {
       </div>
 
       {isPurchased ? (
-        <p style={{ color: "green", fontWeight: "bold" }}>You have purchased this tour.</p>
+        <div style={{ marginTop: "20px" }}>
+          <p style={{ color: "green", fontWeight: "bold" }}>You have purchased this tour.</p>
+          <button
+            onClick={handleStartTour}
+            style={{
+              padding: "10px 20px",
+              backgroundColor: "#007bff",
+              color: "white",
+              border: "none",
+              borderRadius: "5px",
+              cursor: "pointer",
+            }}
+          >
+            {activeExecution?.tourId === tour.id ? "Continue Tour" : "Start Tour"}
+          </button>
+        </div>
       ) : (
         auth.role === "TOURIST" && (
           <button
