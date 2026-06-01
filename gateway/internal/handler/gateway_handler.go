@@ -3,26 +3,30 @@ package handler
 import (
 	"encoding/json"
 	"fmt"
-	"net/http"
-
 	"gateway/internal/aggregate"
+	"gateway/internal/client"
+	"net/http"
+	"strconv"
 )
 
 type GatewayHandler struct {
 	RecommendationService *aggregate.RecommendationService
 	FeedService           *aggregate.FeedService
 	PurchaseService       *aggregate.PurchaseService
+	UsersGRPCClient       *client.UsersGRPCClient
 }
 
 func NewGatewayHandler(
 	recommendationService *aggregate.RecommendationService,
 	feedService *aggregate.FeedService,
 	purchaseService *aggregate.PurchaseService,
+	usersGRPCClient *client.UsersGRPCClient,
 ) *GatewayHandler {
 	return &GatewayHandler{
 		RecommendationService: recommendationService,
 		FeedService:           feedService,
 		PurchaseService:       purchaseService,
+		UsersGRPCClient:       usersGRPCClient,
 	}
 }
 
@@ -144,6 +148,24 @@ func (h *GatewayHandler) AbandonTour(w http.ResponseWriter, r *http.Request) {
 
 	w.Header().Set("Content-Type", "application/json")
 	json.NewEncoder(w).Encode(execution)
+}
+
+func (h *GatewayHandler) GetUserProfile(w http.ResponseWriter, r *http.Request) {
+	idStr := r.PathValue("id")
+	id, err := strconv.ParseInt(idStr, 10, 64)
+	if err != nil {
+		http.Error(w, "invalid id", http.StatusBadRequest)
+		return
+	}
+
+	user, err := h.UsersGRPCClient.GetUser(id)
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusBadGateway)
+		return
+	}
+
+	w.Header().Set("Content-Type", "application/json")
+	json.NewEncoder(w).Encode(user)
 }
 
 func (h *GatewayHandler) GetActiveExecution(w http.ResponseWriter, r *http.Request) {

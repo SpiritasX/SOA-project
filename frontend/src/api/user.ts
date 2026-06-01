@@ -1,7 +1,7 @@
 import { apiFetch } from "./client";
 
 export const getUser = (id: number) =>
-  apiFetch(`/api/user/${id}`);
+  apiFetch(`/api/gateway/user/${id}`);
 
 export const getMe = () =>
   apiFetch('/api/user');

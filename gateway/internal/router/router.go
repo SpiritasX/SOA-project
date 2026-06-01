@@ -4,6 +4,9 @@ import (
 	"net/http"
 	"time"
 
+	"google.golang.org/grpc"
+	"google.golang.org/grpc/credentials/insecure"
+
 	"gateway/internal/aggregate"
 	"gateway/internal/client"
 	"gateway/internal/config"
@@ -34,11 +37,17 @@ func New(cfg config.Config) http.Handler {
 	tourClient := client.NewTourClient(cfg.Services["tour"], httpClient)
 	purchaseClient := client.NewPurchaseClient(cfg.Services["purchase"], httpClient)
 
+	grpcConn, err := grpc.NewClient("stakeholders:9090", grpc.WithTransportCredentials(insecure.NewCredentials()))
+	if err != nil {
+		panic(err)
+	}
+	usersGRPCClient := client.NewUsersGRPCClient(grpcConn)
+
 	recommendationService := aggregate.NewRecommendationService(followersClient, usersClient)
 	feedService := aggregate.NewFeedService(followersClient, blogClient)
 	purchaseService := aggregate.NewPurchaseService(purchaseClient, tourClient)
 
-	gatewayHandler := handler.NewGatewayHandler(recommendationService, feedService, purchaseService)
+	gatewayHandler := handler.NewGatewayHandler(recommendationService, feedService, purchaseService, usersGRPCClient)
 
 	commentGuard := middleware.CommentGuard(blogClient, followersClient)
 
@@ -71,6 +80,7 @@ func New(cfg config.Config) http.Handler {
 	protectedMux.Handle("/api/gateway/executions/{id}/abandon", authMw.Middleware(http.HandlerFunc(gatewayHandler.AbandonTour)))
 	protectedMux.Handle("/api/gateway/executions/active", authMw.Middleware(http.HandlerFunc(gatewayHandler.GetActiveExecution)))
 	protectedMux.Handle("/api/gateway/executions/{id}/check-proximity", authMw.Middleware(http.HandlerFunc(gatewayHandler.CheckProximity)))
+	protectedMux.Handle("/api/gateway/user/{id}", authMw.Middleware(http.HandlerFunc(gatewayHandler.GetUserProfile)))
 
 	protectedMux.Handle("/api/admin/", authMw.Middleware(requireAdmin(adminProxy)))
 	protectedMux.Handle("/api/admin", authMw.Middleware(requireAdmin(adminProxy)))
