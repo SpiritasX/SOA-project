@@ -1,12 +1,13 @@
-import { useEffect, useState, useRef } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { MapContainer, Marker, TileLayer, Popup } from "react-leaflet";
+import { MapContainer, Marker, Polyline, Popup, TileLayer } from "react-leaflet";
 import MapClickHandler from "../../components/MapClickHandler.tsx";
-import { 
-  getActiveExecution, 
-  checkProximity, 
-  abandonTour, 
-  updatePosition 
+import MapView from "../../components/MapView.tsx";
+import {
+  abandonTour,
+  checkProximity,
+  getActiveExecution,
+  updatePosition,
 } from "../../api/execution";
 import { getTour, getTourLocations } from "../../api/tour";
 
@@ -19,7 +20,7 @@ type TourExecution = {
   endTime?: string;
   lastActivity: string;
   completedLocations: Record<number, string>;
-}
+};
 
 type Location = {
   latitude: number;
@@ -36,21 +37,23 @@ type TourLocation = {
 
 function ActiveTour() {
   const navigate = useNavigate();
-  const [execution, setExecution] = useState<TourExecution>(null);
+  const [execution, setExecution] = useState<TourExecution | null>(null);
   const [tour, setTour] = useState<any>(null);
   const [locations, setLocations] = useState<TourLocation[]>([]);
   const [currentLocation, setCurrentLocation] = useState<Location | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
-  const intervalRef = useRef<any>(null);
+  const intervalRef = useRef<ReturnType<typeof setInterval> | null>(null);
 
   const fetchData = async () => {
     try {
-      const activeExec: TourExecution = await getActiveExecution().then(res => res.ok ? res.json() : null);
-      if (!activeExec) {
+      const activeRes = await getActiveExecution();
+      if (!activeRes.ok) {
         navigate("/");
         return;
       }
+
+      const activeExec: TourExecution = await activeRes.json();
       setExecution(activeExec);
 
       const tourRes = await getTour(activeExec.tourId);
@@ -78,9 +81,12 @@ function ActiveTour() {
     if (execution && execution.status === "ACTIVE") {
       intervalRef.current = setInterval(async () => {
         try {
-          const updatedExec: TourExecution = await checkProximity(execution.id).then(res => res.ok ? res.json() : null);
+          const res = await checkProximity(execution.id);
+          if (!res.ok) return;
+
+          const updatedExec: TourExecution = await res.json();
           setExecution(updatedExec);
-          if (updatedExec.status === "COMPLETED") {
+          if (updatedExec.status === "COMPLETED" && intervalRef.current) {
             clearInterval(intervalRef.current);
           }
         } catch (err) {
@@ -96,107 +102,182 @@ function ActiveTour() {
 
   const handleAbandon = async () => {
     if (!execution) return;
+
     if (window.confirm("Are you sure you want to abandon this tour?")) {
       try {
-        await abandonTour(execution.id);
+        const res = await abandonTour(execution.id);
+        if (!res.ok) {
+          setError(await res.text());
+          return;
+        }
         navigate("/");
       } catch (err) {
         console.error(err);
-        alert("Failed to abandon tour.");
+        setError("Failed to abandon tour.");
       }
     }
   };
 
   const handleMapClick = async (lat: number, lng: number) => {
     try {
-      await updatePosition(lat, lng);
+      const positionRes = await updatePosition(lat, lng);
+      if (!positionRes.ok) {
+        setError(await positionRes.text());
+        return;
+      }
+
       setCurrentLocation({ latitude: lat, longitude: lng });
-      
-      // Immediate check after manual move
+
       if (execution) {
-        const updatedExec: TourExecution = await checkProximity(execution.id).then(res => res.ok ? res.json() : null);
-        setExecution(updatedExec);
+        const proximityRes = await checkProximity(execution.id);
+        if (proximityRes.ok) {
+          setExecution(await proximityRes.json());
+        }
       }
     } catch (err) {
       console.error(err);
+      setError("Failed to update position.");
     }
   };
 
-  if (loading) return <div>Loading active tour...</div>;
-  if (error) return <div>{error}</div>;
-  if (!execution || !tour) return <div>No active tour.</div>;
+  if (loading) {
+    return (
+      <div className="state-page">
+        <div className="state-card">
+          <p className="eyebrow">Loading</p>
+          <h1>Loading active tour</h1>
+        </div>
+      </div>
+    );
+  }
 
-  const mapCenter: [number, number] = currentLocation 
-    ? [currentLocation.latitude, currentLocation.longitude] 
-    : locations.length > 0 ? [locations[0].latitude, locations[0].longitude] : [45.2671, 19.8335];
+  if (error) return <div className="alert alert-error">{error}</div>;
+  if (!execution || !tour) {
+    return (
+      <div className="empty-state">
+        <h3>No active tour</h3>
+      </div>
+    );
+  }
+
+  const completedLocations = execution.completedLocations || {};
+  const completedCount = locations.filter((location) => completedLocations[location.id]).length;
+  const progress = locations.length > 0 ? (completedCount / locations.length) * 100 : 0;
+  const mapCenter: [number, number] = currentLocation
+    ? [currentLocation.latitude, currentLocation.longitude]
+    : locations.length > 0
+      ? [locations[0].latitude, locations[0].longitude]
+      : [45.2671, 19.8335];
 
   return (
-    <div style={{ padding: "20px" }}>
-      <h1>Active Tour: {tour.name}</h1>
-      <div style={{ display: "flex", gap: "20px" }}>
-        <div style={{ flex: 1 }}>
-          <p>{tour.description}</p>
-          <h3>Progress</h3>
-          <ul>
-            {locations.map(loc => {
-              const completedAt = execution.completedLocations[loc.id];
-              return (
-                <li key={loc.id} style={{ color: completedAt ? "green" : "black" }}>
-                  <strong>{loc.name}</strong> 
-                  {completedAt ? ` - Reached at: ${new Date(completedAt).toLocaleString()}` : " - Not reached"}
-                </li>
-              );
-            })}
-          </ul>
-          
-          {execution.status === "COMPLETED" && (
-            <div style={{ padding: "10px", backgroundColor: "#d4edda", color: "#155724", borderRadius: "5px", marginBottom: "10px" }}>
-              <strong>Congratulations! You have completed the tour!</strong>
-            </div>
-          )}
-
-          {execution.status === "ACTIVE" && (
-            <button 
-              onClick={handleAbandon}
-              style={{ padding: "10px 20px", backgroundColor: "#dc3545", color: "white", border: "none", borderRadius: "5px", cursor: "pointer" }}
-            >
-              Abandon Tour
-            </button>
-          )}
-
-          <div style={{ marginTop: "20px" }}>
-            <h3>Position Simulator</h3>
-            <p>Click on the map to simulate your movement. Proximity check runs every 10 seconds.</p>
-            {currentLocation && (
-              <p>Current simulated position: {currentLocation.latitude.toFixed(5)}, {currentLocation.longitude.toFixed(5)}</p>
-            )}
+    <div className="page-wide">
+      <header className="page-header">
+        <div className="page-title">
+          <p className="eyebrow">Active Tour</p>
+          <h1>{tour.name}</h1>
+          <p className="subtitle">{tour.description}</p>
+          <div className="meta-row">
+            <span className={`status-pill status-${execution.status.toLowerCase()}`}>
+              {execution.status}
+            </span>
+            <span>
+              {completedCount} / {locations.length} locations reached
+            </span>
           </div>
         </div>
+        {execution.status === "ACTIVE" && (
+          <button className="btn btn-danger" onClick={handleAbandon}>
+            Abandon Tour
+          </button>
+        )}
+      </header>
 
-        <div style={{ flex: 2 }}>
-          <MapContainer center={mapCenter} zoom={13} style={{ height: "500px", width: "100%" }}>
-            <TileLayer
-              attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
-              url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
-            />
+      {execution.status === "COMPLETED" && (
+        <div className="alert alert-success">Tour completed.</div>
+      )}
+
+      <div className="map-layout">
+        <aside className="map-sidebar">
+          <section className="tool-panel">
+            <div className="section-title">
+              <h2>Progress</h2>
+              <p className="muted">{Math.round(progress)} percent complete</p>
+            </div>
+            <div className="progress-bar">
+              <div className="progress-fill" style={{ width: `${progress}%` }} />
+            </div>
+          </section>
+
+          <section className="tool-panel">
+            <div className="section-title">
+              <h2>Route Points</h2>
+            </div>
+            <div className="location-list">
+              {locations.map((location) => {
+                const completedAt = completedLocations[location.id];
+                return (
+                  <div
+                    className={
+                      completedAt ? "location-item is-complete" : "location-item"
+                    }
+                    key={location.id}
+                  >
+                    <h3>{location.name}</h3>
+                    <p>{completedAt ? "Reached" : "Not reached"}</p>
+                    {completedAt && (
+                      <p className="muted">{new Date(completedAt).toLocaleString()}</p>
+                    )}
+                  </div>
+                );
+              })}
+            </div>
+          </section>
+
+          {currentLocation && (
+            <section className="tool-panel">
+              <div className="section-title">
+                <h2>Current Position</h2>
+                <p className="muted">
+                  {currentLocation.latitude.toFixed(5)},{" "}
+                  {currentLocation.longitude.toFixed(5)}
+                </p>
+              </div>
+            </section>
+          )}
+        </aside>
+
+        <section className="map-frame map-frame-large">
+          <MapContainer>
+            <MapView center={mapCenter} zoom={13} />
+            <TileLayer url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png" />
             <MapClickHandler onClick={handleMapClick} />
-            
+
+            {locations.length > 1 && (
+              <Polyline
+                positions={locations.map((location) => [
+                  location.latitude,
+                  location.longitude,
+                ])}
+              />
+            )}
+
             {currentLocation && (
               <Marker position={[currentLocation.latitude, currentLocation.longitude]}>
-                <Popup>You are here (simulated)</Popup>
+                <Popup>Current simulated position</Popup>
               </Marker>
             )}
 
-            {locations.map(loc => (
-              <Marker key={loc.id} position={[loc.latitude, loc.longitude]}>
+            {locations.map((location) => (
+              <Marker key={location.id} position={[location.latitude, location.longitude]}>
                 <Popup>
-                  <strong>{loc.name}</strong><br/>
-                  {execution.completedLocations[loc.id] ? "Reached" : "Not reached"}
+                  <strong>{location.name}</strong>
+                  <br />
+                  {completedLocations[location.id] ? "Reached" : "Not reached"}
                 </Popup>
               </Marker>
             ))}
           </MapContainer>
-        </div>
+        </section>
       </div>
     </div>
   );

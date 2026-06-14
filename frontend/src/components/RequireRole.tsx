@@ -11,7 +11,14 @@ export default function RequireRole({ children, roles }: Props) {
   const { auth } = useAuth();
 
   if (auth.loading) {
-    return <div>Loading...</div>;
+    return (
+      <div className="state-page">
+        <div className="state-card">
+          <p className="eyebrow">Loading</p>
+          <h1>Preparing your workspace</h1>
+        </div>
+      </div>
+    );
   }
 
   if (!auth.token) {

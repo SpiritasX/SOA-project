@@ -1,19 +1,15 @@
 import { useEffect, useState } from "react";
-import { useParams } from "react-router-dom";
+import { Link, useParams } from "react-router-dom";
+import { follow, getFollowingStatus, unfollow } from "../api/follower.ts";
 import { getUser } from "../api/user";
-import {
-  getFollowingStatus,
-  follow,
-  unfollow
-} from "../api/follower.ts";
 
 type User = {
   id: string;
   firstName: string;
   lastName: string;
-  profileImagePath: string;
-  bio: string;
-  motto: string;
+  profileImagePath: string | null;
+  bio: string | null;
+  motto: string | null;
   role: string;
 };
 
@@ -21,6 +17,10 @@ type BlogPost = {
   id: string;
   title: string;
 };
+
+function initials(user: User) {
+  return `${user.firstName?.[0] ?? ""}${user.lastName?.[0] ?? ""}` || "TL";
+}
 
 function User() {
   const { id } = useParams();
@@ -40,12 +40,11 @@ function User() {
       }
 
       const data = await res.json();
-
       setUser(data);
       setBlogs(data.blogs || []);
-
-    } catch (e) {
-      console.error(e);
+    } catch (err) {
+      console.error(err);
+      setError("Failed to load user.");
     }
   };
 
@@ -57,8 +56,8 @@ function User() {
         const data = await res.json();
         setIsFollowing(data.following);
       }
-    } catch (e) {
-      console.error(e);
+    } catch (err) {
+      console.error(err);
     }
   };
 
@@ -72,9 +71,9 @@ function User() {
       }
 
       setIsFollowing(!isFollowing);
-
-    } catch (e) {
-      console.error(e);
+    } catch (err) {
+      console.error(err);
+      setError("Failed to update follow status.");
     }
   };
 
@@ -84,44 +83,63 @@ function User() {
   }, [id]);
 
   if (!user) {
-    return <div>Loading...</div>;
+    return (
+      <div className="state-page">
+        <div className="state-card">
+          <p className="eyebrow">Loading</p>
+          <h1>Loading user</h1>
+        </div>
+      </div>
+    );
   }
 
   return (
-    <div>
-      <h1>
-        {user.firstName} {user.lastName}
-      </h1>
+    <div className="page-narrow">
+      <header className="profile-hero">
+        <div className="avatar">
+          {user.profileImagePath ? (
+            <img src={user.profileImagePath} alt={`${user.firstName} ${user.lastName}`} />
+          ) : (
+            initials(user)
+          )}
+        </div>
+        <div className="page-title">
+          <p className="eyebrow">{user.role}</p>
+          <h1>
+            {user.firstName} {user.lastName}
+          </h1>
+          <p className="subtitle">{user.motto || "No motto set."}</p>
+          {user.bio && <p>{user.bio}</p>}
+        </div>
+        <button className="btn btn-primary" onClick={handleToggleFollow}>
+          {isFollowing ? "Unfollow" : "Follow"}
+        </button>
+      </header>
 
-      <p>{user.bio}</p>
+      {error && <div className="alert alert-error">{error}</div>}
 
-      <p>
-        <strong>Motto:</strong>
-        {" "}
-        {user.motto}
-      </p>
+      <section>
+        <div className="section-header">
+          <div className="section-title">
+            <h2>Blogs</h2>
+            <p className="muted">{blogs.length} posts</p>
+          </div>
+        </div>
 
-      <button onClick={handleToggleFollow}>
-        { isFollowing ? "Unfollow" : "Follow" }
-      </button>
-
-      <hr />
-
-      <h2>Blogs</h2>
-
-      <ul>
-        {blogs.map((blog) => (
-          <li key={blog.id}>
-            {blog.title}
-          </li>
-        ))}
-      </ul>
-
-      {error && (
-        <p style={{ color: "red" }}>
-          {error}
-        </p>
-      )}
+        {blogs.length === 0 ? (
+          <div className="empty-state">
+            <h3>No public blogs</h3>
+          </div>
+        ) : (
+          <div className="list-stack">
+            {blogs.map((blog) => (
+              <Link className="compact-card click-card" key={blog.id} to={`/blog/${blog.id}`}>
+                <h3>{blog.title}</h3>
+              </Link>
+            ))}
+          </div>
+        )}
+      </section>
     </div>
   );
 }

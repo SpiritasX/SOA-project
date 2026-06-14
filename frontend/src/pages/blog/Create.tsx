@@ -5,14 +5,12 @@ import { createBlog } from "../../api/blog";
 function Create() {
   const [title, setTitle] = useState("");
   const [description, setDescription] = useState("");
-
   const [error, setError] = useState("");
 
   const navigate = useNavigate();
 
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-
+  const handleSubmit = async (event: React.FormEvent) => {
+    event.preventDefault();
     setError("");
 
     try {
@@ -27,47 +25,53 @@ function Create() {
       }
 
       navigate("/profile");
-
     } catch (err) {
       console.error(err);
-      setError("Failed to create blog");
+      setError("Failed to create blog.");
     }
   };
 
   return (
-    <div>
-      <h1>Create Blog</h1>
-
-      <form onSubmit={handleSubmit}>
-        <div style={{ marginBottom: "10px" }}>
-          <label>Title</label>
-          <br />
-          <input
-            type="text"
-            value={title}
-            onChange={(e) => setTitle(e.target.value)}
-          />
+    <div className="page-narrow">
+      <header className="page-header">
+        <div className="page-title">
+          <p className="eyebrow">Blog</p>
+          <h1>Create Blog</h1>
+          <p className="subtitle">Publish a post to your social feed.</p>
         </div>
+      </header>
 
-        <div style={{ marginBottom: "10px" }}>
-          <label>Description</label>
-          <br />
-          <textarea
-            value={description}
-            onChange={(e) => setDescription(e.target.value)}
-            rows={6}
-            cols={50}
-          />
-        </div>
+      <section className="form-panel">
+        <form className="form" onSubmit={handleSubmit}>
+          <div className="field">
+            <label htmlFor="title">Title</label>
+            <input
+              id="title"
+              type="text"
+              value={title}
+              onChange={(e) => setTitle(e.target.value)}
+            />
+          </div>
 
-        <button type="submit">Create</button>
-      </form>
+          <div className="field">
+            <label htmlFor="description">Description</label>
+            <textarea
+              id="description"
+              value={description}
+              onChange={(e) => setDescription(e.target.value)}
+              rows={8}
+            />
+          </div>
 
-      {error && (
-        <p style={{ color: "red", marginTop: "10px" }}>
-          {error}
-        </p>
-      )}
+          <div className="button-row">
+            <button className="btn btn-primary" type="submit">
+              Create
+            </button>
+          </div>
+        </form>
+      </section>
+
+      {error && <div className="alert alert-error">{error}</div>}
     </div>
   );
 }

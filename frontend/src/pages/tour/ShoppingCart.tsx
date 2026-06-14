@@ -1,7 +1,7 @@
 import { useState } from "react";
-import { useCart } from "../../context/CartContext";
+import { Link, useNavigate } from "react-router-dom";
 import { purchase } from "../../api/purchase";
-import { useNavigate } from "react-router-dom";
+import { useCart } from "../../context/CartContext";
 
 function ShoppingCart() {
   const { items, removeFromCart, clearCart, totalPrice } = useCart();
@@ -10,8 +10,11 @@ function ShoppingCart() {
   const navigate = useNavigate();
 
   const handleCheckout = async () => {
+    setError("");
+    setSuccess("");
+
     try {
-      const tourIds = items.map((i) => i.id);
+      const tourIds = items.map((item) => item.id);
       const res = await purchase(tourIds);
 
       if (!res.ok) {
@@ -19,58 +22,68 @@ function ShoppingCart() {
         return;
       }
 
-      setSuccess("Order placed successfully! Tokens received.");
+      setSuccess("Order placed successfully. Tokens received.");
       clearCart();
       setTimeout(() => navigate("/profile"), 2000);
-    } catch (e) {
-      console.error(e);
-      setError("An error occurred");
+    } catch (err) {
+      console.error(err);
+      setError("An error occurred.");
     }
   };
 
   return (
-    <div>
-      <h1>Shopping Cart</h1>
+    <div className="page">
+      <header className="page-header">
+        <div className="page-title">
+          <p className="eyebrow">Checkout</p>
+          <h1>Shopping Cart</h1>
+          <p className="subtitle">Selected tours.</p>
+        </div>
+        <span className="badge badge-green">{items.length} items</span>
+      </header>
 
       {items.length === 0 ? (
-        <p>Your cart is empty.</p>
+        <div className="empty-state">
+          <h3>Your cart is empty</h3>
+          <Link className="btn btn-primary" to="/">
+            Explore Tours
+          </Link>
+        </div>
       ) : (
-        <>
-          <ul>
+        <div className="split-grid">
+          <section className="list-stack">
             {items.map((item) => (
-              <li key={item.id} style={{ marginBottom: "10px" }}>
-                <strong>{item.name}</strong> - ${item.price}
-                <button
-                  onClick={() => removeFromCart(item.id)}
-                  style={{ marginLeft: "10px", color: "red" }}
-                >
-                  Remove
-                </button>
-              </li>
+              <article className="card" key={item.id}>
+                <div className="card-body">
+                  <div className="spaced-row">
+                    <div>
+                      <h2>{item.name}</h2>
+                      <p className="price">${item.price}</p>
+                    </div>
+                    <button
+                      className="btn btn-danger btn-small"
+                      onClick={() => removeFromCart(item.id)}
+                    >
+                      Remove
+                    </button>
+                  </div>
+                </div>
+              </article>
             ))}
-          </ul>
+          </section>
 
-          <div style={{ marginTop: "20px", borderTop: "1px solid #ccc", paddingTop: "10px" }}>
-            <h3>Total Price: ${totalPrice.toFixed(2)}</h3>
-            <button
-              onClick={handleCheckout}
-              style={{
-                padding: "10px 20px",
-                backgroundColor: "#007bff",
-                color: "white",
-                border: "none",
-                borderRadius: "5px",
-                cursor: "pointer",
-              }}
-            >
+          <aside className="tool-panel cart-summary">
+            <p className="eyebrow">Total</p>
+            <h1>${totalPrice.toFixed(2)}</h1>
+            <button className="btn btn-primary" onClick={handleCheckout}>
               Checkout
             </button>
-          </div>
-        </>
+          </aside>
+        </div>
       )}
 
-      {error && <p style={{ color: "red", marginTop: "10px" }}>{error}</p>}
-      {success && <p style={{ color: "green", marginTop: "10px" }}>{success}</p>}
+      {error && <div className="alert alert-error">{error}</div>}
+      {success && <div className="alert alert-success">{success}</div>}
     </div>
   );
 }

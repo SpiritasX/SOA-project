@@ -1,8 +1,7 @@
-import { BrowserRouter as Router, Routes, Route, Link } from 'react-router-dom';
+import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
 import Home from './pages/Home';
 import Login from './pages/Login';
 import Register from './pages/Register';
-import { useAuth } from './context/AuthContext';
 import Profile from "./pages/Profile";
 import User from "./pages/User";
 import CreateBlog from "./pages/blog/Create";
@@ -16,26 +15,12 @@ import ShoppingCart from "./pages/tour/ShoppingCart";
 import ActiveTour from "./pages/tour/ActiveTour";
 import Admin from "./pages/Admin.tsx";
 import RequireRole from "./components/RequireRole.tsx";
+import AppShell from "./components/AppShell.tsx";
 
 function App() {
-  const { logout } = useAuth();
-
   return (
     <Router>
-      <nav style={{ padding: '20px', borderBottom: '1px solid var(--border)' }}>
-        <Link to="/" style={{ margin: '0 10px' }}>Home</Link>
-        <Link to="/login" style={{ margin: '0 10px' }}>Login</Link>
-        <Link to="/register" style={{ margin: '0 10px' }}>Register</Link>
-        <Link to="/profile" style={{ margin: '0 10px' }}>Profile</Link>
-        <Link to="/admin" style={{ margin: '0 10px' }}>Admin</Link>
-        <Link to="/blog/create" style={{ margin: '0 10px' }}>Create Blog</Link>
-        <Link to="/tour/create" style={{ margin: '0 10px' }}>Create Tour</Link>
-        <Link to="/simulator" style={{ margin: '0 10px' }}>Simulator</Link>
-        <Link to="/cart" style={{ margin: '0 10px' }}>Cart</Link>
-        <button onClick={logout} style={{ margin: '0 10px' }}>Logout</button>
-      </nav>
-
-      <main style={{ padding: '20px' }}>
+      <AppShell>
         <Routes>
           <Route path="/" element={
             <Home />
@@ -101,7 +86,7 @@ function App() {
             </RequireRole>
           } />
         </Routes>
-      </main>
+      </AppShell>
     </Router>
   );
 }

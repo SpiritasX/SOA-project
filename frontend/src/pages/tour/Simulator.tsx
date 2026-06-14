@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import { MapContainer, Marker, TileLayer } from "react-leaflet";
 import MapClickHandler from "../../components/MapClickHandler.tsx";
+import MapView from "../../components/MapView.tsx";
 import { getTouristLocation, updateTouristLocation } from "../../api/tour.ts";
 
 type Location = {
@@ -34,10 +35,13 @@ function Simulator() {
   }, []);
 
   const handleMapClick = async (lat: number, lng: number) => {
-    setStatus("Saving...");
+    setStatus("Saving position...");
 
     try {
-      const response = await updateTouristLocation({ latitude: lat, longitude: lng });
+      const response = await updateTouristLocation({
+        latitude: lat,
+        longitude: lng,
+      });
 
       if (!response.ok) {
         setStatus("Failed to save location.");
@@ -45,7 +49,7 @@ function Simulator() {
       }
 
       setLocation({ latitude: lat, longitude: lng });
-      setStatus(`Location set: ${lat.toFixed(5)}, ${lng.toFixed(5)}`);
+      setStatus(`Position saved: ${lat.toFixed(5)}, ${lng.toFixed(5)}`);
     } catch (err) {
       console.error(err);
       setStatus("Failed to save location.");
@@ -57,40 +61,35 @@ function Simulator() {
     : [45.2671, 19.8335];
 
   return (
-    <div>
-      <h1>Position Simulator</h1>
-      <p>Click on the map to set your current location.</p>
+    <div className="page-wide">
+      <header className="page-header">
+        <div className="page-title">
+          <p className="eyebrow">Tourist tools</p>
+          <h1>Position Simulator</h1>
+          <div className="meta-row">
+            {loading && <span className="badge">Loading position</span>}
+            {!loading && location && (
+              <span className="badge badge-green">
+                {location.latitude.toFixed(5)}, {location.longitude.toFixed(5)}
+              </span>
+            )}
+            {!loading && !location && <span className="badge badge-amber">No position</span>}
+          </div>
+        </div>
+      </header>
 
-      {loading && <p>Loading current location...</p>}
+      {status && <div className="alert alert-success">{status}</div>}
 
-      {!loading && location && (
-        <p>
-          Current position: {location.latitude.toFixed(5)}, {location.longitude.toFixed(5)}
-        </p>
-      )}
+      <section className="map-frame map-frame-large">
+        <MapContainer>
+          <MapView center={mapCenter} zoom={13} />
+          <TileLayer url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png" />
 
-      {!loading && !location && (
-        <p>No location set yet. Click on the map to set one.</p>
-      )}
+          <MapClickHandler onClick={handleMapClick} />
 
-      {status && <p>{status}</p>}
-
-      <MapContainer
-        center={mapCenter}
-        zoom={13}
-        style={{ height: "600px", width: "100%" }}
-      >
-        <TileLayer
-          attribution="&copy; OpenStreetMap contributors"
-          url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
-        />
-
-        <MapClickHandler onClick={handleMapClick} />
-
-        {location && (
-          <Marker position={[location.latitude, location.longitude]} />
-        )}
-      </MapContainer>
+          {location && <Marker position={[location.latitude, location.longitude]} />}
+        </MapContainer>
+      </section>
     </div>
   );
 }

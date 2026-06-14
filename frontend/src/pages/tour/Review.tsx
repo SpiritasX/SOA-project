@@ -11,9 +11,8 @@ function Review() {
   const [visitedAt, setVisitedAt] = useState("");
   const [error, setError] = useState("");
 
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-
+  const handleSubmit = async (event: React.FormEvent) => {
+    event.preventDefault();
     setError("");
 
     try {
@@ -31,59 +30,66 @@ function Review() {
       navigate(`/tour/${id}`);
     } catch (err) {
       console.error(err);
-      setError("Failed to submit review");
+      setError("Failed to submit review.");
     }
   };
 
   return (
-    <div>
-      <h1>Leave Review</h1>
-
-      <form onSubmit={handleSubmit}>
-        <div style={{ marginBottom: "10px" }}>
-          <label>Rating</label>
-          <br />
-          <select
-            value={rating}
-            onChange={(e) => setRating(Number(e.target.value))}
-          >
-            <option value={1}>1</option>
-            <option value={2}>2</option>
-            <option value={3}>3</option>
-            <option value={4}>4</option>
-            <option value={5}>5</option>
-          </select>
+    <div className="page-narrow">
+      <header className="page-header">
+        <div className="page-title">
+          <p className="eyebrow">Tour review</p>
+          <h1>Leave Review</h1>
+          <p className="subtitle">Share your visit experience.</p>
         </div>
+      </header>
 
-        <div style={{ marginBottom: "10px" }}>
-          <label>Visited At</label>
-          <br />
-          <input
-            type="date"
-            value={visitedAt}
-            onChange={(e) => setVisitedAt(e.target.value)}
-          />
-        </div>
+      <section className="form-panel">
+        <form className="form" onSubmit={handleSubmit}>
+          <div className="form-grid">
+            <div className="field">
+              <label htmlFor="rating">Rating</label>
+              <select
+                id="rating"
+                value={rating}
+                onChange={(e) => setRating(Number(e.target.value))}
+              >
+                <option value={1}>1</option>
+                <option value={2}>2</option>
+                <option value={3}>3</option>
+                <option value={4}>4</option>
+                <option value={5}>5</option>
+              </select>
+            </div>
 
-        <div style={{ marginBottom: "10px" }}>
-          <label>Comment</label>
-          <br />
-          <textarea
-            value={comment}
-            onChange={(e) => setComment(e.target.value)}
-            rows={6}
-            cols={50}
-          />
-        </div>
+            <div className="field">
+              <label htmlFor="visitedAt">Visited at</label>
+              <input
+                id="visitedAt"
+                type="date"
+                value={visitedAt}
+                onChange={(e) => setVisitedAt(e.target.value)}
+              />
+            </div>
+          </div>
 
-        <button type="submit">Submit Review</button>
-      </form>
+          <div className="field">
+            <label htmlFor="comment">Comment</label>
+            <textarea
+              id="comment"
+              value={comment}
+              onChange={(e) => setComment(e.target.value)}
+              rows={8}
+            />
+          </div>
 
-      {error && (
-        <p style={{ color: "red", marginTop: "10px" }}>
-          {error}
-        </p>
-      )}
+          <button className="btn btn-primary" type="submit">
+            Submit Review
+          </button>
+        </form>
+      </section>
+
+      {error && <div className="alert alert-error">{error}</div>}
     </div>
   );
 }

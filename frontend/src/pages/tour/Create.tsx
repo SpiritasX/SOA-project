@@ -8,14 +8,12 @@ function Create() {
   const [difficulty, setDifficulty] = useState("EASY");
   const [tags, setTags] = useState("");
   const [price, setPrice] = useState(0);
-
   const [error, setError] = useState("");
 
   const navigate = useNavigate();
 
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-
+  const handleSubmit = async (event: React.FormEvent) => {
+    event.preventDefault();
     setError("");
 
     try {
@@ -23,7 +21,10 @@ function Create() {
         name,
         description,
         difficulty,
-        tags: tags.split(",").map((t) => t.trim()).filter((t) => t !== ""),
+        tags: tags
+          .split(",")
+          .map((tag) => tag.trim())
+          .filter((tag) => tag !== ""),
         price,
       });
 
@@ -33,82 +34,89 @@ function Create() {
       }
 
       const id = await response.json();
-
       navigate(`/tour/${id}/edit`);
-
     } catch (err) {
       console.error(err);
-      setError("Failed to create tour");
+      setError("Failed to create tour.");
     }
   };
 
   return (
-    <div>
-      <h1>Create Tour</h1>
-
-      <form onSubmit={handleSubmit}>
-        <div style={{ marginBottom: "10px" }}>
-          <label>Name</label>
-          <br />
-          <input
-            type="text"
-            value={name}
-            onChange={(e) => setName(e.target.value)}
-          />
+    <div className="page-narrow">
+      <header className="page-header">
+        <div className="page-title">
+          <p className="eyebrow">Guide tools</p>
+          <h1>Create Tour</h1>
+          <p className="subtitle">Draft details for a new guided route.</p>
         </div>
+      </header>
 
-        <div style={{ marginBottom: "10px" }}>
-          <label>Description</label>
-          <br />
-          <textarea
-            value={description}
-            onChange={(e) => setDescription(e.target.value)}
-            rows={6}
-            cols={50}
-          />
-        </div>
+      <section className="form-panel">
+        <form className="form" onSubmit={handleSubmit}>
+          <div className="field">
+            <label htmlFor="name">Name</label>
+            <input
+              id="name"
+              type="text"
+              value={name}
+              onChange={(e) => setName(e.target.value)}
+            />
+          </div>
 
-        <div style={{ marginBottom: "10px" }}>
-          <label>Difficulty</label>
-          <br />
-          <select
-            value={difficulty}
-            onChange={(e) => setDifficulty(e.target.value)}
-          >
-            <option value="EASY">Easy</option>
-            <option value="MEDIUM">Medium</option>
-            <option value="HARD">Hard</option>
-          </select>
-        </div>
+          <div className="field">
+            <label htmlFor="description">Description</label>
+            <textarea
+              id="description"
+              value={description}
+              onChange={(e) => setDescription(e.target.value)}
+              rows={8}
+            />
+          </div>
 
-        <div style={{ marginBottom: "10px" }}>
-          <label>Tags (comma separated)</label>
-          <br />
-          <input
-            type="text"
-            value={tags}
-            onChange={(e) => setTags(e.target.value)}
-          />
-        </div>
+          <div className="form-grid">
+            <div className="field">
+              <label htmlFor="difficulty">Difficulty</label>
+              <select
+                id="difficulty"
+                value={difficulty}
+                onChange={(e) => setDifficulty(e.target.value)}
+              >
+                <option value="EASY">Easy</option>
+                <option value="MEDIUM">Medium</option>
+                <option value="HARD">Hard</option>
+              </select>
+            </div>
 
-        <div style={{ marginBottom: "10px" }}>
-          <label>Price</label>
-          <br />
-          <input
-            type="number"
-            value={price}
-            onChange={(e) => setPrice(Number(e.target.value))}
-          />
-        </div>
+            <div className="field">
+              <label htmlFor="price">Price</label>
+              <input
+                id="price"
+                type="number"
+                value={price}
+                onChange={(e) => setPrice(Number(e.target.value))}
+              />
+            </div>
+          </div>
 
-        <button type="submit">Create</button>
-      </form>
+          <div className="field">
+            <label htmlFor="tags">Tags</label>
+            <input
+              id="tags"
+              type="text"
+              value={tags}
+              onChange={(e) => setTags(e.target.value)}
+            />
+          </div>
 
-      {error && (
-        <p style={{ color: "red", marginTop: "10px" }}>
-          {error}
-        </p>
-      )}
+          <div className="button-row">
+            <button className="btn btn-primary" type="submit">
+              Create Tour
+            </button>
+          </div>
+        </form>
+      </section>
+
+      {error && <div className="alert alert-error">{error}</div>}
     </div>
   );
 }
