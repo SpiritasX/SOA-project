@@ -1,3 +1,4 @@
+# app/api/routes.py
 from fastapi import APIRouter, Header, HTTPException
 from app.services.follow_service import FollowService
 
@@ -26,7 +27,7 @@ def follow(
     follower_id = int(x_user_id)
 
     if follower_id == user_id:
-        raise HTTPExeption(status_code=403, detail="You can't follow yourself")
+        raise HTTPException(status_code=403, detail="You can't follow yourself")
 
     FollowService.follow(follower_id, user_id)
     return {"message": "Followed"}

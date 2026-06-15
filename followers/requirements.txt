@@ -1,6 +1,8 @@
-fastapi
+fastapi==0.115.14
 uvicorn[standard]
 neo4j
 python-dotenv
 pyjwt
 pika
+starlette==0.46.2
+prometheus-fastapi-instrumentator==7.1.0

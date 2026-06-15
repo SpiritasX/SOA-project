@@ -2,6 +2,7 @@ from fastapi import FastAPI
 from app.api.routes import router
 from app.messaging.rabbit import RabbitConsumer
 from app.db.neo4j import Neo4jDriver
+from prometheus_fastapi_instrumentator import Instrumentator
 import threading
 
 def start_consumer():
@@ -21,3 +22,5 @@ def shutdown():
     Neo4jDriver.close()
 
 app.include_router(router)
+
+Instrumentator().instrument(app).expose(app, endpoint="/metrics")
